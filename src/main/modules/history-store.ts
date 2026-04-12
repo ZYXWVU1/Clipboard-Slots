@@ -115,6 +115,29 @@ export class HistoryStore extends EventEmitter {
     this.persistAndEmit();
   }
 
+  updateContent(id: string, content: string): ClipboardHistoryItem | undefined {
+    let updatedItem: ClipboardHistoryItem | undefined;
+
+    this.items = this.items.map((item) => {
+      if (item.id !== id) {
+        return item;
+      }
+
+      updatedItem = {
+        ...item,
+        content
+      };
+      return updatedItem;
+    });
+
+    if (!updatedItem) {
+      return undefined;
+    }
+
+    this.persistAndEmit();
+    return cloneItem(updatedItem);
+  }
+
   clear(): void {
     if (this.items.length === 0) {
       return;

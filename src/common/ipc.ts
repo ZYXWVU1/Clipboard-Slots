@@ -6,6 +6,7 @@ export const IPC_CHANNELS = {
   historyGet: "history:get",
   historyClear: "history:clear",
   historyDelete: "history:delete",
+  historyUpdate: "history:update",
   historyTogglePin: "history:toggle-pin",
   historyCopy: "history:copy",
   historyPasteItem: "history:paste-item",

@@ -1,5 +1,6 @@
 export type ClipboardContentType = "text";
 export type HotkeyMode = "direct" | "chord";
+export type SupportedLocale = "en" | "zh-CN";
 
 export interface ClipboardHistoryItem {
   id: string;
@@ -11,6 +12,7 @@ export interface ClipboardHistoryItem {
 }
 
 export interface AppSettings {
+  locale: SupportedLocale;
   hotkeyMode: HotkeyMode;
   directHotkeys: Record<number, string>;
   chordActivator: string;
@@ -62,6 +64,7 @@ export interface CtrlCvApi {
   getHistory: () => Promise<ClipboardHistoryItem[]>;
   clearHistory: () => Promise<void>;
   deleteHistoryItem: (id: string) => Promise<void>;
+  updateHistoryItem: (id: string, content: string) => Promise<ActionResult>;
   togglePin: (id: string) => Promise<void>;
   copyHistoryItem: (id: string) => Promise<ActionResult>;
   pasteHistoryItem: (id: string) => Promise<ActionResult>;

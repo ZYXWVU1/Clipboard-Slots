@@ -3,15 +3,15 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>CtrlCVTool Slot Picker</title>
+    <title data-i18n="picker.windowTitle">CtrlCVTool Slot Picker</title>
     <link rel="stylesheet" href="./common.css" />
   </head>
   <body>
     <main class="picker-shell">
       <section class="hero" style="padding: 22px;">
-        <p class="badge teal">Chord Mode</p>
-        <h1 class="hero-title" style="font-size: 2rem;">Pick a Slot</h1>
-        <p class="hero-subtitle">
+        <p class="badge teal" data-i18n="picker.badge">Chord Mode</p>
+        <h1 class="hero-title" style="font-size: 2rem;" data-i18n="picker.title">Pick a Slot</h1>
+        <p class="hero-subtitle" data-i18n="picker.subtitle">
           Type a slot number and press Enter, or click an item below to paste it.
         </p>
       </section>
@@ -21,12 +21,12 @@
       <section class="panel">
         <form id="picker-form" class="picker-form">
           <div class="field">
-            <label for="slot-input">Slot number</label>
-            <input id="slot-input" type="number" min="1" step="1" placeholder="1" />
+            <label for="slot-input" data-i18n="picker.slotLabel">Slot number</label>
+            <input id="slot-input" type="number" min="1" step="1" placeholder="1" data-i18n-placeholder="picker.slotPlaceholder" />
           </div>
           <div class="button-row">
-            <button class="button-primary" type="submit">Paste Slot</button>
-            <button id="cancel-button" class="button-ghost" type="button">Cancel</button>
+            <button class="button-primary" type="submit" data-i18n="picker.paste">Paste Slot</button>
+            <button id="cancel-button" class="button-ghost" type="button" data-i18n="picker.cancel">Cancel</button>
           </div>
         </form>
       </section>
@@ -34,8 +34,8 @@
       <section class="panel">
         <div class="toolbar">
           <div>
-            <h2>Available Slots</h2>
-            <p class="panel-note">This list mirrors the current ordered clipboard history.</p>
+            <h2 data-i18n="picker.available">Available Slots</h2>
+            <p class="panel-note" data-i18n="picker.availableNote">This list mirrors the current ordered clipboard history.</p>
           </div>
         </div>
         <div id="picker-list" class="history-list"></div>

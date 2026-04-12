@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>CtrlCVTool</title>
+    <title data-i18n="app.title">CtrlCVTool</title>
     <link rel="stylesheet" href="./common.css" />
   </head>
   <body>
@@ -12,20 +12,19 @@
         <section class="hero">
           <div class="hero-top">
             <div class="hero-copy">
-              <p class="badge teal">Desktop Clipboard Utility</p>
-              <h1 class="hero-title">CtrlCVTool</h1>
-              <p class="hero-subtitle">
+              <p class="badge teal" data-i18n="history.badge">Desktop Clipboard Utility</p>
+              <h1 class="hero-title" data-i18n="history.title">CtrlCVTool</h1>
+              <p class="hero-subtitle" data-i18n="history.subtitle">
                 Copy text normally, keep each item in ordered slots, and paste a
                 specific saved slot with global shortcuts or from this window.
               </p>
             </div>
             <div class="hero-actions">
-              <button id="view-history-button" class="button-primary" type="button">Saved Slots</button>
-              <button id="open-settings-button" class="button-secondary" type="button">Settings</button>
+              <button id="open-settings-button" class="button-secondary" type="button" data-i18n="nav.settings">Settings</button>
             </div>
           </div>
           <div class="toolbar">
-            <button id="clear-history-button" class="button-danger" type="button">Clear History</button>
+            <button id="clear-history-button" class="button-danger" type="button" data-i18n="action.clearHistory">Clear History</button>
           </div>
         </section>
 
@@ -36,8 +35,8 @@
         <section class="panel panel-fill items-panel">
           <div class="toolbar">
             <div>
-              <h2>Saved Slots</h2>
-              <p class="panel-note">
+              <h2 data-i18n="history.section.title">Saved Slots</h2>
+              <p class="panel-note" data-i18n="history.section.note">
                 Slot numbers follow copy order. Slot 1 is the oldest item still retained.
               </p>
             </div>
@@ -50,13 +49,13 @@
         <section class="hero">
           <div class="hero-top">
             <div class="hero-copy">
-              <h1 class="hero-title">Configure CtrlCVTool</h1>
-              <p class="hero-subtitle">
+              <h1 class="hero-title" data-i18n="settings.title">Configure CtrlCVTool</h1>
+              <p class="hero-subtitle" data-i18n="settings.subtitle">
                 Adjust slot shortcuts, history size, startup behavior, and clipboard handling without leaving the main window.
               </p>
             </div>
             <div class="hero-actions">
-              <button id="settings-open-history-button" class="button-secondary" type="button">Back To Saved Slots</button>
+              <button id="settings-open-history-button" class="button-secondary" type="button" data-i18n="settings.back">Back To Saved Slots</button>
             </div>
           </div>
           <div class="hero-badges" id="hero-badges"></div>
@@ -68,8 +67,8 @@
           <section class="panel panel-fill">
             <div class="toolbar">
               <div>
-                <h2>Shortcut Mode</h2>
-                <p class="panel-note">
+                <h2 data-i18n="settings.shortcutMode.title">Shortcut Mode</h2>
+                <p class="panel-note" data-i18n="settings.shortcutMode.note">
                   Direct mode registers one global shortcut per slot. Chord mode opens a slot picker.
                 </p>
               </div>
@@ -80,8 +79,8 @@
                 <label class="radio-card">
                   <span class="radio-head">
                     <span>
-                      <strong>Direct hotkeys</strong>
-                      <span class="field-help">Default: Ctrl+Alt+1 through Ctrl+Alt+9</span>
+                      <strong data-i18n="settings.mode.direct.title">Direct hotkeys</strong>
+                      <span class="field-help" data-i18n="settings.mode.direct.note">Default: Ctrl+Alt+1 through Ctrl+Alt+9</span>
                     </span>
                     <input type="radio" name="hotkeyMode" value="direct" />
                   </span>
@@ -89,8 +88,8 @@
                 <label class="radio-card">
                   <span class="radio-head">
                     <span>
-                      <strong>Chord picker</strong>
-                      <span class="field-help">One global shortcut opens the slot picker for any saved slot.</span>
+                      <strong data-i18n="settings.mode.chord.title">Chord picker</strong>
+                      <span class="field-help" data-i18n="settings.mode.chord.note">One global shortcut opens the slot picker for any saved slot.</span>
                     </span>
                     <input type="radio" name="hotkeyMode" value="chord" />
                   </span>
@@ -99,37 +98,45 @@
 
               <div class="field-grid">
                 <div class="field">
-                  <label for="chordActivator">Chord activator</label>
+                  <label for="language" data-i18n="settings.language.label">Language</label>
+                  <select id="language" name="language">
+                    <option value="en" data-i18n="settings.language.option.en">English</option>
+                    <option value="zh-CN" data-i18n="settings.language.option.zh-CN">Chinese (Simplified)</option>
+                  </select>
+                </div>
+                <div class="field">
+                  <label for="chordActivator" data-i18n="settings.chordActivator.label">Chord activator</label>
                   <input
                     id="chordActivator"
                     name="chordActivator"
                     type="text"
                     placeholder="CommandOrControl+Alt+Space"
+                    data-i18n-placeholder="settings.chordActivator.placeholder"
                   />
                 </div>
                 <div class="field">
-                  <label for="chordTimeoutMs">Chord picker timeout (ms)</label>
+                  <label for="chordTimeoutMs" data-i18n="settings.chordTimeout.label">Chord picker timeout (ms)</label>
                   <input id="chordTimeoutMs" name="chordTimeoutMs" type="number" min="1500" max="30000" />
                 </div>
               </div>
 
               <div class="panel">
-                <h3>Direct Slot Hotkeys</h3>
-                <p class="panel-note">
+                <h3 data-i18n="settings.directHotkeys.title">Direct Slot Hotkeys</h3>
+                <p class="panel-note" data-i18n="settings.directHotkeys.note">
                   Direct mode registers the first nine slots. Higher slots stay available in the main window and chord mode.
                 </p>
                 <div id="shortcut-grid" class="shortcut-grid"></div>
               </div>
 
               <div class="panel">
-                <h3>Behavior</h3>
+                <h3 data-i18n="settings.behavior.title">Behavior</h3>
                 <div class="field-grid">
                   <div class="field">
-                    <label for="maxHistory">Max saved items</label>
+                    <label for="maxHistory" data-i18n="settings.maxHistory.label">Max saved items</label>
                     <input id="maxHistory" name="maxHistory" type="number" min="1" max="99" />
                   </div>
                   <div class="field">
-                    <label for="clipboardPollIntervalMs">Clipboard poll interval (ms)</label>
+                    <label for="clipboardPollIntervalMs" data-i18n="settings.pollInterval.label">Clipboard poll interval (ms)</label>
                     <input
                       id="clipboardPollIntervalMs"
                       name="clipboardPollIntervalMs"
@@ -144,8 +151,8 @@
                   <label class="toggle-card">
                     <span class="toggle-head">
                       <span>
-                        <strong>Deduplicate consecutive copies</strong>
-                        <span class="field-help">Skip adding a new slot when the latest saved text already matches.</span>
+                        <strong data-i18n="settings.dedupe.title">Deduplicate consecutive copies</strong>
+                        <span class="field-help" data-i18n="settings.dedupe.note">Skip adding a new slot when the latest saved text already matches.</span>
                       </span>
                       <input id="deduplicateConsecutive" name="deduplicateConsecutive" type="checkbox" />
                     </span>
@@ -153,8 +160,8 @@
                   <label class="toggle-card">
                     <span class="toggle-head">
                       <span>
-                        <strong>Restore the user clipboard after paste</strong>
-                        <span class="field-help">Temporarily swaps the clipboard, then puts the old value back.</span>
+                        <strong data-i18n="settings.restore.title">Restore the user clipboard after paste</strong>
+                        <span class="field-help" data-i18n="settings.restore.note">Temporarily swaps the clipboard, then puts the old value back.</span>
                       </span>
                       <input id="restoreClipboardAfterPaste" name="restoreClipboardAfterPaste" type="checkbox" />
                     </span>
@@ -162,8 +169,8 @@
                   <label class="toggle-card">
                     <span class="toggle-head">
                       <span>
-                        <strong>Launch on system startup</strong>
-                        <span class="field-help">Uses the platform login-item setting when available.</span>
+                        <strong data-i18n="settings.startOnBoot.title">Launch on system startup</strong>
+                        <span class="field-help" data-i18n="settings.startOnBoot.note">Uses the platform login-item setting when available.</span>
                       </span>
                       <input id="startOnBoot" name="startOnBoot" type="checkbox" />
                     </span>
@@ -171,8 +178,8 @@
                   <label class="toggle-card">
                     <span class="toggle-head">
                       <span>
-                        <strong>Persist history between restarts</strong>
-                        <span class="field-help">Turn this off for temporary, in-memory history only.</span>
+                        <strong data-i18n="settings.persist.title">Persist history between restarts</strong>
+                        <span class="field-help" data-i18n="settings.persist.note">Turn this off for temporary, in-memory history only.</span>
                       </span>
                       <input id="persistHistory" name="persistHistory" type="checkbox" />
                     </span>
@@ -181,16 +188,16 @@
               </div>
 
               <div class="button-row">
-                <button id="save-button" class="button-primary" type="submit">Save Settings</button>
-                <button id="reset-shortcuts-button" class="button-secondary" type="button">Reset Shortcuts</button>
-                <button id="settings-clear-history-button" class="button-danger" type="button">Clear History</button>
+                <button id="save-button" class="button-primary" type="submit" data-i18n="settings.save">Save Settings</button>
+                <button id="reset-shortcuts-button" class="button-secondary" type="button" data-i18n="settings.resetShortcuts">Reset Shortcuts</button>
+                <button id="settings-clear-history-button" class="button-danger" type="button" data-i18n="action.clearHistory">Clear History</button>
               </div>
             </form>
           </section>
 
           <section class="panel panel-fill">
-            <h2>Hotkey Registration</h2>
-            <p class="panel-note">
+            <h2 data-i18n="hotkeys.title">Hotkey Registration</h2>
+            <p class="panel-note" data-i18n="hotkeys.note">
               Electron reports whether each shortcut could be claimed successfully on the current machine.
             </p>
             <div id="hotkey-warnings" class="status-pill-row"></div>

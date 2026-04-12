@@ -139,7 +139,8 @@ body {
 }
 
 .hero-top {
-  justify-content: space-between;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
   align-items: flex-start;
   gap: 20px;
 }
@@ -147,11 +148,14 @@ body {
 .hero-copy {
   display: grid;
   gap: 14px;
+  min-width: 0;
   max-width: min(780px, 100%);
 }
 
 .hero-actions {
+  flex-shrink: 0;
   justify-content: flex-end;
+  align-self: start;
 }
 
 .hero-title {
@@ -253,7 +257,8 @@ textarea {
 }
 
 input[type="text"],
-input[type="number"] {
+input[type="number"],
+textarea {
   width: 100%;
   padding: 12px 14px;
   border-radius: var(--radius-sm);
@@ -261,6 +266,12 @@ input[type="number"] {
   background: var(--bg-panel-strong);
   color: var(--text-main);
   outline: none;
+}
+
+textarea {
+  resize: vertical;
+  min-height: 120px;
+  line-height: 1.55;
 }
 
 input[type="checkbox"],
@@ -431,6 +442,15 @@ button:disabled {
   line-height: 1.55;
 }
 
+.editor-field {
+  display: grid;
+  gap: 10px;
+}
+
+.slot-editor {
+  white-space: pre-wrap;
+}
+
 .item-actions {
   margin-top: 16px;
   flex-wrap: wrap;
@@ -495,6 +515,10 @@ button:disabled {
   .hero,
   .panel {
     padding: 20px;
+  }
+
+  .hero-top {
+    grid-template-columns: 1fr;
   }
 
   .shortcut-row {

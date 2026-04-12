@@ -1,4 +1,9 @@
-import type { ClipboardHistoryItem, SlotPickerContext } from "../common/types";
+import { DEFAULT_LOCALE, t, type TranslationKey } from "../common/i18n";
+import type {
+  ClipboardHistoryItem,
+  SlotPickerContext,
+  SupportedLocale
+} from "../common/types";
 
 const form = document.querySelector<HTMLFormElement>("#picker-form");
 const slotInput = document.querySelector<HTMLInputElement>("#slot-input");
@@ -12,6 +17,40 @@ if (!form || !slotInput || !pickerList || !statusBanner) {
 
 let context: SlotPickerContext | null = null;
 let timeoutHandle: number | undefined;
+let locale: SupportedLocale = DEFAULT_LOCALE;
+
+const translate = (
+  key: TranslationKey,
+  params: Record<string, string | number> = {}
+): string => t(locale, key, params);
+
+const applyStaticTranslations = () => {
+  document.documentElement.lang = locale;
+
+  for (const element of document.querySelectorAll<HTMLElement>("[data-i18n]")) {
+    const key = element.dataset.i18n as TranslationKey | undefined;
+    if (!key) {
+      continue;
+    }
+
+    const message = t(locale, key);
+    if (element.tagName === "TITLE") {
+      document.title = message;
+      continue;
+    }
+
+    element.textContent = message;
+  }
+
+  for (const element of document.querySelectorAll<HTMLInputElement>("[data-i18n-placeholder]")) {
+    const key = element.dataset.i18nPlaceholder as TranslationKey | undefined;
+    if (!key) {
+      continue;
+    }
+
+    element.placeholder = t(locale, key);
+  }
+};
 
 const truncate = (value: string, maxLength = 120) =>
   value.length <= maxLength ? value : `${value.slice(0, maxLength)}...`;
@@ -46,7 +85,7 @@ const renderItems = (items: ClipboardHistoryItem[]) => {
   if (items.length === 0) {
     const empty = document.createElement("div");
     empty.className = "empty-state";
-    empty.textContent = "No slots are available yet.";
+    empty.textContent = translate("picker.empty");
     pickerList.append(empty);
     return;
   }
@@ -59,11 +98,13 @@ const renderItems = (items: ClipboardHistoryItem[]) => {
     head.className = "item-head";
 
     const title = document.createElement("h3");
-    title.textContent = `Slot ${item.slot}`;
+    title.textContent = translate("history.slotLabel", { slot: item.slot });
 
     const stamp = document.createElement("span");
     stamp.className = item.pinned ? "badge orange" : "badge";
-    stamp.textContent = item.pinned ? "Pinned" : "Ready";
+    stamp.textContent = item.pinned
+      ? translate("history.pinned")
+      : translate("picker.ready");
 
     head.append(title, stamp);
 
@@ -76,7 +117,7 @@ const renderItems = (items: ClipboardHistoryItem[]) => {
 
     const pasteButton = document.createElement("button");
     pasteButton.className = "button-primary";
-    pasteButton.textContent = `Paste Slot ${item.slot}`;
+    pasteButton.textContent = translate("picker.pasteSlotButton", { slot: item.slot });
     pasteButton.addEventListener("click", async () => {
       const result = await window.ctrlCvApi.submitSlotPicker(item.slot);
       showBanner(result.message, result.ok ? "success" : "error");
@@ -89,7 +130,14 @@ const renderItems = (items: ClipboardHistoryItem[]) => {
 };
 
 const initialize = async () => {
-  context = await window.ctrlCvApi.getSlotPickerContext();
+  const [nextContext, settings] = await Promise.all([
+    window.ctrlCvApi.getSlotPickerContext(),
+    window.ctrlCvApi.getSettings()
+  ]);
+
+  context = nextContext;
+  locale = settings.locale;
+  applyStaticTranslations();
   renderItems(context.items);
   slotInput.focus();
   slotInput.select();
@@ -101,7 +149,7 @@ form.addEventListener("submit", async (event) => {
 
   const slot = Number(slotInput.value);
   if (!Number.isInteger(slot) || slot < 1) {
-    showBanner("Enter a valid slot number.", "error");
+    showBanner(translate("picker.invalidSlot"), "error");
     return;
   }
 
@@ -127,6 +175,7 @@ window.ctrlCvApi.onHistoryChanged((items) => {
   if (!context) {
     return;
   }
+
   context = {
     ...context,
     items
@@ -135,4 +184,13 @@ window.ctrlCvApi.onHistoryChanged((items) => {
   startTimeout();
 });
 
+window.ctrlCvApi.onSettingsChanged((settings) => {
+  locale = settings.locale;
+  applyStaticTranslations();
+  if (context) {
+    renderItems(context.items);
+  }
+});
+
+applyStaticTranslations();
 void initialize();

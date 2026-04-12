@@ -1,7 +1,8 @@
 import path from "node:path";
 import { BrowserWindow } from "electron";
+import { DEFAULT_LOCALE, t } from "../../common/i18n";
 import { IPC_CHANNELS } from "../../common/ipc";
-import type { AppView } from "../../common/types";
+import type { AppView, SupportedLocale } from "../../common/types";
 
 type WindowName = "history" | "slot-picker";
 
@@ -24,6 +25,14 @@ const baseWindowOptions = {
 export class WindowManager {
   private historyWindow: BrowserWindow | null = null;
   private slotPickerWindow: BrowserWindow | null = null;
+  private locale: SupportedLocale = DEFAULT_LOCALE;
+
+  setLocale(locale: SupportedLocale): void {
+    this.locale = locale;
+
+    this.historyWindow?.setTitle(t(locale, "app.title"));
+    this.slotPickerWindow?.setTitle(t(locale, "picker.windowTitle"));
+  }
 
   openHistory(): void {
     this.showMainWindow("history");
@@ -81,7 +90,7 @@ export class WindowManager {
   private createHistoryWindow(): BrowserWindow {
     const window = new BrowserWindow({
       ...baseWindowOptions,
-      title: "CtrlCVTool",
+      title: t(this.locale, "app.title"),
       width: 980,
       height: 720,
       minWidth: 860,
@@ -96,7 +105,7 @@ export class WindowManager {
   private createSlotPickerWindow(): BrowserWindow {
     const window = new BrowserWindow({
       ...baseWindowOptions,
-      title: "Choose a Slot",
+      title: t(this.locale, "picker.windowTitle"),
       width: 440,
       height: 520,
       resizable: false,

@@ -1,7 +1,9 @@
 import path from "node:path";
 import { app, ipcMain } from "electron";
+import { t } from "../common/i18n";
 import { IPC_CHANNELS } from "../common/ipc";
 import type {
+  ActionResult,
   AppSettings,
   HotkeyStatus,
   SaveSettingsResult,
@@ -49,6 +51,34 @@ const registerIpcHandlers = (
   ipcMain.handle(IPC_CHANNELS.historyDelete, (_event, id: string) => {
     historyStore.delete(id);
   });
+  ipcMain.handle(
+    IPC_CHANNELS.historyUpdate,
+    (_event, payload: { id?: string; content?: string }): ActionResult => {
+      const locale = settingsManager.getSettings().locale;
+      const id = typeof payload?.id === "string" ? payload.id : "";
+      const content = typeof payload?.content === "string" ? payload.content : "";
+
+      if (content.length === 0) {
+        return {
+          ok: false,
+          message: t(locale, "action.emptyEditedContent")
+        };
+      }
+
+      const updatedItem = historyStore.updateContent(id, content);
+      if (!updatedItem) {
+        return {
+          ok: false,
+          message: t(locale, "action.itemUnavailable")
+        };
+      }
+
+      return {
+        ok: true,
+        message: t(locale, "action.updatedSlot", { slot: updatedItem.slot })
+      };
+    }
+  );
   ipcMain.handle(IPC_CHANNELS.historyTogglePin, (_event, id: string) => {
     historyStore.togglePin(id);
   });
@@ -105,6 +135,7 @@ const main = async () => {
   );
   const startupManager = new StartupManager();
   const trayManager = new TrayManager();
+  windowManager.setLocale(settings.locale);
 
   const broadcastSettings = (nextSettings: AppSettings) => {
     windowManager.broadcast(IPC_CHANNELS.settingsChanged, nextSettings);
@@ -123,6 +154,8 @@ const main = async () => {
     clipboardWatcher.updateSettings();
     hotkeyManager.register(nextSettings);
     startupManager.apply(nextSettings.startOnBoot);
+    windowManager.setLocale(nextSettings.locale);
+    trayManager.setLocale(nextSettings.locale);
     broadcastSettings(nextSettings);
     broadcastHistory();
     broadcastHotkeys();
@@ -144,15 +177,18 @@ const main = async () => {
     hotkeyManager
   );
 
-  trayManager.create({
-    openHistory: () => windowManager.openHistory(),
-    openSettings: () => windowManager.openSettings(),
-    clearHistory: () => historyStore.clear(),
-    quit: () => {
-      isQuitting = true;
-      app.quit();
-    }
-  });
+  trayManager.create(
+    {
+      openHistory: () => windowManager.openHistory(),
+      openSettings: () => windowManager.openSettings(),
+      clearHistory: () => historyStore.clear(),
+      quit: () => {
+        isQuitting = true;
+        app.quit();
+      }
+    },
+    settings.locale
+  );
 
   startupManager.apply(settings.startOnBoot);
   hotkeyManager.register(settings);

@@ -4,7 +4,7 @@
   "description": "Windows-first multi-slot clipboard manager built with Electron and TypeScript.",
   "private": true,
   "main": "dist/main/main.js",
-  "author": "Codex",
+  "author": "Bleem",
   "scripts": {
     "build": "node scripts/build.mjs",
     "start": "npm run build && electron .",

@@ -1,5 +1,6 @@
 import { spawn } from "node:child_process";
 import { clipboard } from "electron";
+import { t } from "../../common/i18n";
 import type { ActionResult, ClipboardHistoryItem } from "../../common/types";
 import { ClipboardWatcher } from "./clipboard-watcher";
 import { HistoryStore } from "./history-store";
@@ -24,29 +25,32 @@ export class PasteEngine {
 
   async copyHistoryItem(id: string): Promise<ActionResult> {
     const item = this.historyStore.getById(id);
+    const locale = this.settingsManager.getSettings().locale;
     if (!item) {
-      return failed("That clipboard item is no longer available.");
+      return failed(t(locale, "action.itemUnavailable"));
     }
     this.clipboardWatcher.suppressText(item.content);
     clipboard.writeText(item.content);
     return {
       ok: true,
-      message: `Copied slot ${item.slot} back to the clipboard.`
+      message: t(locale, "action.copiedSlot", { slot: item.slot })
     };
   }
 
   async pasteHistoryItem(id: string): Promise<ActionResult> {
     const item = this.historyStore.getById(id);
+    const locale = this.settingsManager.getSettings().locale;
     if (!item) {
-      return failed("That clipboard item is no longer available.");
+      return failed(t(locale, "action.itemUnavailable"));
     }
     return this.pasteItem(item);
   }
 
   async pasteSlot(slot: number): Promise<ActionResult> {
     const item = this.historyStore.getBySlot(slot);
+    const locale = this.settingsManager.getSettings().locale;
     if (!item) {
-      return failed(`Slot ${slot} is empty right now.`);
+      return failed(t(locale, "action.slotEmpty", { slot }));
     }
     return this.pasteItem(item);
   }
@@ -64,9 +68,7 @@ export class PasteEngine {
     try {
       await this.simulatePaste();
     } catch {
-      return failed(
-        "Paste simulation failed. The target app may be blocking synthetic input."
-      );
+      return failed(t(settings.locale, "action.pasteFailed"));
     }
 
     if (previousClipboard !== null) {
@@ -79,7 +81,7 @@ export class PasteEngine {
 
     return {
       ok: true,
-      message: `Pasted slot ${item.slot}.`
+      message: t(settings.locale, "action.pastedSlot", { slot: item.slot })
     };
   }
 

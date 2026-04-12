@@ -1,9 +1,11 @@
 import { MAX_DIRECT_SLOT_SHORTCUTS } from "../common/defaults";
+import { DEFAULT_LOCALE, t, type TranslationKey } from "../common/i18n";
 import type {
   AppSettings,
   AppView,
   ClipboardHistoryItem,
-  HotkeyStatus
+  HotkeyStatus,
+  SupportedLocale
 } from "../common/types";
 
 interface SettingsState {
@@ -18,7 +20,6 @@ const historyStatusBanner = document.querySelector<HTMLDivElement>("#history-sta
 const settingsStatusBanner = document.querySelector<HTMLDivElement>("#settings-status");
 const summaryRoot = document.querySelector<HTMLDivElement>("#history-summary");
 const openSettingsButton = document.querySelector<HTMLButtonElement>("#open-settings-button");
-const viewHistoryButton = document.querySelector<HTMLButtonElement>("#view-history-button");
 const settingsOpenHistoryButton = document.querySelector<HTMLButtonElement>(
   "#settings-open-history-button"
 );
@@ -34,6 +35,7 @@ const resetShortcutsButton = document.querySelector<HTMLButtonElement>("#reset-s
 const settingsClearHistoryButton = document.querySelector<HTMLButtonElement>(
   "#settings-clear-history-button"
 );
+const languageSelect = document.querySelector<HTMLSelectElement>("#language");
 
 if (
   !historyView ||
@@ -46,7 +48,8 @@ if (
   !shortcutGrid ||
   !heroBadges ||
   !hotkeyWarnings ||
-  !hotkeyStatusList
+  !hotkeyStatusList ||
+  !languageSelect
 ) {
   throw new Error("Main UI failed to initialize.");
 }
@@ -54,15 +57,55 @@ if (
 let currentView: AppView = "history";
 let items: ClipboardHistoryItem[] = [];
 let settingsState: SettingsState | null = null;
+let editingItemId: string | null = null;
+let editingDraft = "";
+
+const getLocale = (): SupportedLocale => settingsState?.settings.locale ?? DEFAULT_LOCALE;
+
+const translate = (
+  key: TranslationKey,
+  params: Record<string, string | number> = {}
+): string => t(getLocale(), key, params);
 
 const formatTimestamp = (value: string) =>
-  new Intl.DateTimeFormat(undefined, {
+  new Intl.DateTimeFormat(getLocale(), {
     dateStyle: "medium",
     timeStyle: "short"
   }).format(new Date(value));
 
 const truncate = (value: string, maxLength = 220) =>
   value.length <= maxLength ? value : `${value.slice(0, maxLength)}...`;
+
+const applyStaticTranslations = () => {
+  const locale = getLocale();
+  document.documentElement.lang = locale;
+
+  for (const element of document.querySelectorAll<HTMLElement>("[data-i18n]")) {
+    const key = element.dataset.i18n as TranslationKey | undefined;
+    if (!key) {
+      continue;
+    }
+
+    const message = t(locale, key);
+    if (element.tagName === "TITLE") {
+      document.title = message;
+      continue;
+    }
+
+    element.textContent = message;
+  }
+
+  for (const element of document.querySelectorAll<
+    HTMLInputElement | HTMLTextAreaElement
+  >("[data-i18n-placeholder]")) {
+    const key = element.dataset.i18nPlaceholder as TranslationKey | undefined;
+    if (!key) {
+      continue;
+    }
+
+    element.placeholder = t(locale, key);
+  }
+};
 
 const showBanner = (
   target: HTMLDivElement,
@@ -95,14 +138,18 @@ const showView = (view: AppView) => {
   historyView.hidden = view !== "history";
   settingsView.hidden = view !== "settings";
 
-  if (viewHistoryButton) {
-    viewHistoryButton.className =
-      view === "history" ? "button-primary" : "button-secondary";
-  }
   if (openSettingsButton) {
     openSettingsButton.className =
       view === "settings" ? "button-primary" : "button-secondary";
   }
+};
+
+const getContentTypeLabel = (item: ClipboardHistoryItem) => {
+  if (item.contentType === "text") {
+    return translate("history.contentType.text");
+  }
+
+  return item.contentType;
 };
 
 const renderSummary = () => {
@@ -113,16 +160,18 @@ const renderSummary = () => {
 
   const entries = [
     {
-      label: "Saved items",
+      label: translate("summary.savedItems"),
       value: String(items.length)
     },
     {
-      label: "Pinned",
+      label: translate("summary.pinned"),
       value: String(pinnedCount)
     },
     {
-      label: "Latest slot",
-      value: latestItem ? `Slot ${latestItem.slot}` : "None"
+      label: translate("summary.latestSlot"),
+      value: latestItem
+        ? translate("history.slotLabel", { slot: latestItem.slot })
+        : translate("common.none")
     }
   ];
 
@@ -142,13 +191,18 @@ const renderSummary = () => {
 };
 
 const renderHistory = () => {
+  if (editingItemId && !items.some((item) => item.id === editingItemId)) {
+    editingItemId = null;
+    editingDraft = "";
+  }
+
   renderSummary();
   historyList.innerHTML = "";
 
   if (items.length === 0) {
     const empty = document.createElement("div");
     empty.className = "empty-state";
-    empty.textContent = "Nothing has been captured yet. Copy text normally to populate the slot list.";
+    empty.textContent = translate("history.empty");
     historyList.append(empty);
     return;
   }
@@ -162,63 +216,120 @@ const renderHistory = () => {
 
     const titleBlock = document.createElement("div");
     const title = document.createElement("h3");
-    title.textContent = `Slot ${item.slot}`;
+    title.textContent = translate("history.slotLabel", { slot: item.slot });
 
     const meta = document.createElement("div");
     meta.className = "item-meta";
-    meta.innerHTML = `
-      <span>${item.contentType.toUpperCase()}</span>
-      <span>${formatTimestamp(item.timestamp)}</span>
-      <span>${item.content.length} chars</span>
-      <span>${item.pinned ? "Pinned" : "Unpinned"}</span>
-    `;
+
+    for (const value of [
+      getContentTypeLabel(item),
+      formatTimestamp(item.timestamp),
+      translate("history.charCount", { count: item.content.length }),
+      item.pinned ? translate("history.pinned") : translate("history.unpinned")
+    ]) {
+      const chip = document.createElement("span");
+      chip.textContent = value;
+      meta.append(chip);
+    }
 
     titleBlock.append(title, meta);
 
     const status = document.createElement("span");
     status.className = item.pinned ? "badge orange" : "badge";
-    status.textContent = item.pinned ? "Pinned" : "Live";
+    status.textContent = item.pinned
+      ? translate("history.pinned")
+      : translate("history.live");
 
     head.append(titleBlock, status);
 
     const preview = document.createElement("div");
     preview.className = "item-preview";
-    preview.textContent = truncate(item.content);
+    if (editingItemId === item.id) {
+      const editorField = document.createElement("label");
+      editorField.className = "editor-field";
+
+      const editorLabel = document.createElement("span");
+      editorLabel.className = "field-help";
+      editorLabel.textContent = translate("history.editLabel");
+
+      const editor = document.createElement("textarea");
+      editor.className = "slot-editor";
+      editor.rows = 5;
+      editor.value = editingDraft;
+      editor.addEventListener("input", () => {
+        editingDraft = editor.value;
+      });
+
+      editorField.append(editorLabel, editor);
+      preview.append(editorField);
+    } else {
+      preview.textContent = truncate(item.content);
+    }
 
     const actions = document.createElement("div");
     actions.className = "item-actions";
 
     const copyButton = document.createElement("button");
     copyButton.className = "button-secondary";
-    copyButton.textContent = "Copy Again";
+    copyButton.textContent = translate("history.copyAgain");
     copyButton.addEventListener("click", async () => {
       const result = await window.ctrlCvApi.copyHistoryItem(item.id);
       showBanner(historyStatusBanner, result.message, result.ok ? "success" : "error");
     });
 
-    const pasteButton = document.createElement("button");
-    pasteButton.className = "button-primary";
-    pasteButton.textContent = "Paste Now";
-    pasteButton.addEventListener("click", async () => {
-      const result = await window.ctrlCvApi.pasteHistoryItem(item.id);
-      showBanner(historyStatusBanner, result.message, result.ok ? "success" : "error");
+    const editButton = document.createElement("button");
+    if (editingItemId === item.id) {
+      editButton.className = "button-primary";
+      editButton.textContent = translate("history.saveEdit");
+      editButton.addEventListener("click", async () => {
+        const result = await window.ctrlCvApi.updateHistoryItem(item.id, editingDraft);
+        showBanner(historyStatusBanner, result.message, result.ok ? "success" : "error");
+        if (result.ok) {
+          editingItemId = null;
+          editingDraft = "";
+          renderHistory();
+        }
+      });
+    } else {
+      editButton.className = "button-primary";
+      editButton.textContent = translate("history.edit");
+      editButton.addEventListener("click", () => {
+        editingItemId = item.id;
+        editingDraft = item.content;
+        renderHistory();
+      });
+    }
+
+    const cancelEditButton = document.createElement("button");
+    cancelEditButton.className = "button-secondary";
+    cancelEditButton.textContent = translate("history.cancelEdit");
+    cancelEditButton.addEventListener("click", () => {
+      editingItemId = null;
+      editingDraft = "";
+      renderHistory();
     });
 
     const pinButton = document.createElement("button");
     pinButton.className = "button-ghost";
-    pinButton.textContent = item.pinned ? "Unpin" : "Pin";
+    pinButton.textContent = item.pinned
+      ? translate("history.unpin")
+      : translate("history.pin");
     pinButton.addEventListener("click", async () => {
       await window.ctrlCvApi.togglePin(item.id);
     });
 
     const deleteButton = document.createElement("button");
     deleteButton.className = "button-danger";
-    deleteButton.textContent = "Delete";
+    deleteButton.textContent = translate("history.delete");
     deleteButton.addEventListener("click", async () => {
       await window.ctrlCvApi.deleteHistoryItem(item.id);
     });
 
-    actions.append(copyButton, pasteButton, pinButton, deleteButton);
+    actions.append(copyButton, editButton);
+    if (editingItemId === item.id) {
+      actions.append(cancelEditButton);
+    }
+    actions.append(pinButton, deleteButton);
     card.append(head, preview, actions);
     historyList.append(card);
   }
@@ -229,19 +340,28 @@ const renderSettingsHeroBadges = (settings: AppSettings) => {
 
   const badges = [
     {
-      label: settings.hotkeyMode === "direct" ? "Direct hotkeys active" : "Chord picker active",
+      label:
+        settings.hotkeyMode === "direct"
+          ? translate("settings.badge.direct")
+          : translate("settings.badge.chord"),
       className: "badge teal"
     },
     {
-      label: `${settings.maxHistory} saved slots`,
+      label: translate("settings.badge.savedSlots", {
+        count: settings.maxHistory
+      }),
       className: "badge orange"
     },
     {
-      label: settings.persistHistory ? "Persistent history" : "Temporary history",
+      label: settings.persistHistory
+        ? translate("settings.badge.persistent")
+        : translate("settings.badge.temporary"),
       className: settings.persistHistory ? "badge" : "badge red"
     },
     {
-      label: settings.restoreClipboardAfterPaste ? "Clipboard restore on" : "Clipboard restore off",
+      label: settings.restoreClipboardAfterPaste
+        ? translate("settings.badge.restoreOn")
+        : translate("settings.badge.restoreOff"),
       className: "badge"
     }
   ];
@@ -263,7 +383,7 @@ const renderShortcutInputs = (settings: AppSettings) => {
 
     const chip = document.createElement("div");
     chip.className = "slot-chip";
-    chip.textContent = `Slot ${slot}`;
+    chip.textContent = translate("history.slotLabel", { slot });
 
     const input = document.createElement("input");
     input.type = "text";
@@ -294,14 +414,19 @@ const renderHotkeyStatus = (hotkeys: HotkeyStatus) => {
     const title = document.createElement("strong");
     title.textContent =
       registration.kind === "slot"
-        ? `Slot ${registration.slot}: ${registration.accelerator}`
-        : `Chord activator: ${registration.accelerator}`;
+        ? translate("hotkeys.registration.slot", {
+            slot: registration.slot ?? "?",
+            accelerator: registration.accelerator
+          })
+        : translate("hotkeys.registration.chord", {
+            accelerator: registration.accelerator
+          });
 
     const detail = document.createElement("div");
     detail.textContent =
       registration.status === "registered"
-        ? "Registered successfully."
-        : registration.reason ?? "Registration failed.";
+        ? translate("hotkeys.registered")
+        : registration.reason ?? translate("hotkey.registerFailed");
 
     row.append(title, detail);
     hotkeyStatusList.append(row);
@@ -310,7 +435,7 @@ const renderHotkeyStatus = (hotkeys: HotkeyStatus) => {
   if (hotkeys.registrations.length === 0) {
     const empty = document.createElement("div");
     empty.className = "empty-state";
-    empty.textContent = "No hotkeys are registered yet.";
+    empty.textContent = translate("hotkeys.empty");
     hotkeyStatusList.append(empty);
   }
 };
@@ -324,12 +449,12 @@ const renderSettingsForm = (settings: AppSettings) => {
   }
 
   const assignValue = (selector: string, value: string | number | boolean) => {
-    const input = settingsForm.querySelector<HTMLInputElement>(selector);
+    const input = settingsForm.querySelector<HTMLInputElement | HTMLSelectElement>(selector);
     if (!input) {
       return;
     }
 
-    if (input.type === "checkbox") {
+    if (input instanceof HTMLInputElement && input.type === "checkbox") {
       input.checked = Boolean(value);
       return;
     }
@@ -337,6 +462,7 @@ const renderSettingsForm = (settings: AppSettings) => {
     input.value = String(value);
   };
 
+  assignValue("#language", settings.locale);
   assignValue("#chordActivator", settings.chordActivator);
   assignValue("#chordTimeoutMs", settings.chordTimeoutMs);
   assignValue("#maxHistory", settings.maxHistory);
@@ -352,8 +478,10 @@ const renderSettingsForm = (settings: AppSettings) => {
 
 const applySettingsState = (nextState: SettingsState) => {
   settingsState = nextState;
+  applyStaticTranslations();
   renderSettingsForm(nextState.settings);
   renderHotkeyStatus(nextState.hotkeys);
+  renderHistory();
 };
 
 const collectSettingsFromForm = (): Partial<AppSettings> => {
@@ -365,6 +493,7 @@ const collectSettingsFromForm = (): Partial<AppSettings> => {
   }
 
   return {
+    locale: String(formData.get("language") ?? DEFAULT_LOCALE) as SupportedLocale,
     hotkeyMode: String(formData.get("hotkeyMode")) === "chord" ? "chord" : "direct",
     chordActivator: String(formData.get("chordActivator") ?? "").trim(),
     chordTimeoutMs: Number(formData.get("chordTimeoutMs") ?? 0),
@@ -393,8 +522,12 @@ const initializeSettings = async () => {
 };
 
 clearHistoryButton?.addEventListener("click", async () => {
-  await window.ctrlCvApi.clearHistory();
-  showBanner(historyStatusBanner, "Clipboard history cleared.", "success");
+  try {
+    await window.ctrlCvApi.clearHistory();
+    showBanner(historyStatusBanner, translate("message.historyCleared"), "success");
+  } catch {
+    showBanner(historyStatusBanner, translate("message.historyClearFailed"), "error");
+  }
 });
 
 settingsClearHistoryButton?.addEventListener("click", async () => {
@@ -402,9 +535,9 @@ settingsClearHistoryButton?.addEventListener("click", async () => {
 
   try {
     await window.ctrlCvApi.clearHistory();
-    showBanner(settingsStatusBanner, "Clipboard history cleared.", "success");
+    showBanner(settingsStatusBanner, translate("message.historyCleared"), "success");
   } catch {
-    showBanner(settingsStatusBanner, "Clipboard history could not be cleared.", "error");
+    showBanner(settingsStatusBanner, translate("message.historyClearFailed"), "error");
   } finally {
     setBusy(false);
   }
@@ -412,10 +545,6 @@ settingsClearHistoryButton?.addEventListener("click", async () => {
 
 openSettingsButton?.addEventListener("click", () => {
   showView("settings");
-});
-
-viewHistoryButton?.addEventListener("click", () => {
-  showView("history");
 });
 
 settingsOpenHistoryButton?.addEventListener("click", () => {
@@ -432,9 +561,9 @@ settingsForm.addEventListener("submit", async (event) => {
       settings: result.settings,
       hotkeys: result.hotkeyStatus
     });
-    showBanner(settingsStatusBanner, "Settings saved.", "success");
+    showBanner(settingsStatusBanner, translate("message.settingsSaved"), "success");
   } catch {
-    showBanner(settingsStatusBanner, "Settings could not be saved.", "error");
+    showBanner(settingsStatusBanner, translate("message.settingsSaveFailed"), "error");
   } finally {
     setBusy(false);
   }
@@ -449,9 +578,9 @@ resetShortcutsButton?.addEventListener("click", async () => {
       settings: result.settings,
       hotkeys: result.hotkeyStatus
     });
-    showBanner(settingsStatusBanner, "Shortcut fields were reset to the defaults.", "success");
+    showBanner(settingsStatusBanner, translate("message.shortcutsReset"), "success");
   } catch {
-    showBanner(settingsStatusBanner, "Shortcut reset failed.", "error");
+    showBanner(settingsStatusBanner, translate("message.shortcutsResetFailed"), "error");
   } finally {
     setBusy(false);
   }
@@ -489,4 +618,5 @@ window.ctrlCvApi.onAppViewChanged((view) => {
 });
 
 showView(currentView);
+applyStaticTranslations();
 void Promise.all([refreshHistory(), initializeSettings()]);

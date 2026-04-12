@@ -1,6 +1,7 @@
 import { EventEmitter } from "node:events";
 import { globalShortcut } from "electron";
 import { MAX_DIRECT_SLOT_SHORTCUTS } from "../../common/defaults";
+import { t } from "../../common/i18n";
 import type {
   ActionResult,
   AppSettings,
@@ -31,6 +32,7 @@ export class HotkeyManager extends EventEmitter {
     const registrations: HotkeyRegistration[] = [];
     const warnings: string[] = [];
     const seen = new Map<string, string>();
+    const locale = settings.locale;
 
     if (settings.hotkeyMode === "direct") {
       const directSlots = Object.entries(settings.directHotkeys)
@@ -49,7 +51,9 @@ export class HotkeyManager extends EventEmitter {
 
       if (settings.maxHistory > MAX_DIRECT_SLOT_SHORTCUTS) {
         warnings.push(
-          `Direct mode registers shortcuts for the first ${MAX_DIRECT_SLOT_SHORTCUTS} slots. Use chord mode or the main window for higher slots.`
+          t(locale, "hotkey.warning.directLimit", {
+            count: MAX_DIRECT_SLOT_SHORTCUTS
+          })
         );
       }
 
@@ -63,7 +67,7 @@ export class HotkeyManager extends EventEmitter {
             slot,
             accelerator,
             status: "failed",
-            reason: `Conflicts with slot ${duplicateSlot}.`
+            reason: t(locale, "hotkey.conflictSlot", { slot: duplicateSlot })
           });
           continue;
         }
@@ -80,7 +84,7 @@ export class HotkeyManager extends EventEmitter {
             slot,
             accelerator,
             status: registered ? "registered" : "failed",
-            reason: registered ? undefined : "Electron could not register this shortcut."
+            reason: registered ? undefined : t(locale, "hotkey.registerFailed")
           });
         } catch {
           registrations.push({
@@ -88,7 +92,7 @@ export class HotkeyManager extends EventEmitter {
             slot,
             accelerator,
             status: "failed",
-            reason: "Invalid accelerator syntax."
+            reason: t(locale, "hotkey.invalidSyntax")
           });
         }
       }
@@ -102,20 +106,18 @@ export class HotkeyManager extends EventEmitter {
           kind: "chord",
           accelerator: settings.chordActivator,
           status: registered ? "registered" : "failed",
-          reason: registered ? undefined : "Electron could not register this shortcut."
+          reason: registered ? undefined : t(locale, "hotkey.registerFailed")
         });
       } catch {
         registrations.push({
           kind: "chord",
           accelerator: settings.chordActivator,
           status: "failed",
-          reason: "Invalid accelerator syntax."
+          reason: t(locale, "hotkey.invalidSyntax")
         });
       }
 
-      warnings.push(
-        "Chord mode opens the slot picker, then pastes after you choose a slot."
-      );
+      warnings.push(t(locale, "hotkey.warning.chordMode"));
     }
 
     this.status = {

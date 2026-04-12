@@ -19,6 +19,7 @@ export const buildDefaultDirectHotkeys = (
 };
 
 export const DEFAULT_SETTINGS: AppSettings = {
+  locale: "en",
   hotkeyMode: DEFAULT_HOTKEY_MODE,
   directHotkeys: buildDefaultDirectHotkeys(),
   chordActivator: "CommandOrControl+Alt+Space",

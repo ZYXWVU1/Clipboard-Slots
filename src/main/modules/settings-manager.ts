@@ -9,6 +9,7 @@ import {
   MIN_HISTORY_SIZE,
   buildDefaultDirectHotkeys
 } from "../../common/defaults";
+import { DEFAULT_LOCALE, isSupportedLocale } from "../../common/i18n";
 import type { AppSettings, HotkeyMode } from "../../common/types";
 import { JsonFileStore } from "./file-store";
 
@@ -55,6 +56,7 @@ export const sanitizeSettings = (value: unknown): AppSettings => {
   }
 
   return {
+    locale: isSupportedLocale(value.locale) ? value.locale : DEFAULT_LOCALE,
     hotkeyMode: sanitizeMode(value.hotkeyMode),
     directHotkeys: sanitizeDirectHotkeys(value.directHotkeys),
     chordActivator:
