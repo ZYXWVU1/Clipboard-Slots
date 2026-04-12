@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CtrlCVTool</title>
+    <link rel="stylesheet" href="./common.css" />
+  </head>
+  <body>
+    <main class="app-shell">
+      <section class="hero">
+        <div class="hero-top">
+          <div>
+            <p class="badge teal">Desktop Clipboard Utility</p>
+            <h1 class="hero-title">CtrlCVTool</h1>
+            <p class="hero-subtitle">
+              Copy text normally, keep each item in ordered slots, and paste a
+              specific saved slot with global shortcuts or from this window.
+            </p>
+          </div>
+        </div>
+        <div class="toolbar" style="margin-top: 18px;">
+          <button id="open-settings-button" class="button-secondary" type="button">Open Settings</button>
+          <button id="refresh-button" class="button-ghost" type="button">Refresh</button>
+          <button id="clear-history-button" class="button-danger" type="button">Clear History</button>
+        </div>
+      </section>
+
+      <div id="history-status" class="status-banner" hidden></div>
+
+      <section class="summary-grid" id="history-summary"></section>
+
+      <section class="panel">
+        <div class="toolbar">
+          <div>
+            <h2>Saved Slots</h2>
+            <p class="panel-note">
+              Slot numbers follow copy order. Slot 1 is the oldest item still retained.
+            </p>
+          </div>
+        </div>
+        <div id="history-list" class="history-list"></div>
+      </section>
+    </main>
+
+    <script src="./history.js"></script>
+  </body>
+</html>

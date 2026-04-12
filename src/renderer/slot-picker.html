@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CtrlCVTool Slot Picker</title>
+    <link rel="stylesheet" href="./common.css" />
+  </head>
+  <body>
+    <main class="picker-shell">
+      <section class="hero" style="padding: 22px;">
+        <p class="badge teal">Chord Mode</p>
+        <h1 class="hero-title" style="font-size: 2rem;">Pick a Slot</h1>
+        <p class="hero-subtitle">
+          Type a slot number and press Enter, or click an item below to paste it.
+        </p>
+      </section>
+
+      <div id="picker-status" class="status-banner" hidden></div>
+
+      <section class="panel">
+        <form id="picker-form" class="picker-form">
+          <div class="field">
+            <label for="slot-input">Slot number</label>
+            <input id="slot-input" type="number" min="1" step="1" placeholder="1" />
+          </div>
+          <div class="button-row">
+            <button class="button-primary" type="submit">Paste Slot</button>
+            <button id="cancel-button" class="button-ghost" type="button">Cancel</button>
+          </div>
+        </form>
+      </section>
+
+      <section class="panel">
+        <div class="toolbar">
+          <div>
+            <h2>Available Slots</h2>
+            <p class="panel-note">This list mirrors the current ordered clipboard history.</p>
+          </div>
+        </div>
+        <div id="picker-list" class="history-list"></div>
+      </section>
+    </main>
+
+    <script src="./slot-picker.js"></script>
+  </body>
+</html>

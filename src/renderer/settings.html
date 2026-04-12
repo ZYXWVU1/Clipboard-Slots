@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CtrlCVTool Settings</title>
+    <link rel="stylesheet" href="./common.css" />
+  </head>
+  <body>
+    <main class="app-shell">
+      <section class="hero">
+        <div class="hero-top">
+          <div>
+            <p class="badge teal">Settings</p>
+            <h1 class="hero-title">Configure CtrlCVTool</h1>
+            <p class="hero-subtitle">
+              Adjust slot shortcuts, history size, startup behavior, and clipboard handling.
+            </p>
+          </div>
+        </div>
+        <div class="hero-badges" id="hero-badges"></div>
+      </section>
+
+      <div id="settings-status" class="status-banner" hidden></div>
+
+      <section class="panel">
+        <div class="toolbar">
+          <div>
+            <h2>Shortcut Mode</h2>
+            <p class="panel-note">
+              Direct mode registers one global shortcut per slot. Chord mode opens a slot picker.
+            </p>
+          </div>
+        </div>
+
+        <form id="settings-form">
+          <div class="radio-group">
+            <label class="radio-card">
+              <span class="radio-head">
+                <span>
+                  <strong>Direct hotkeys</strong>
+                  <span class="field-help">Default: Ctrl+Alt+1 through Ctrl+Alt+9</span>
+                </span>
+                <input type="radio" name="hotkeyMode" value="direct" />
+              </span>
+            </label>
+            <label class="radio-card">
+              <span class="radio-head">
+                <span>
+                  <strong>Chord picker</strong>
+                  <span class="field-help">One global shortcut opens the slot picker for any saved slot.</span>
+                </span>
+                <input type="radio" name="hotkeyMode" value="chord" />
+              </span>
+            </label>
+          </div>
+
+          <div class="field-grid">
+            <div class="field">
+              <label for="chordActivator">Chord activator</label>
+              <input
+                id="chordActivator"
+                name="chordActivator"
+                type="text"
+                placeholder="CommandOrControl+Alt+Space"
+              />
+              <span class="field-help">Uses Electron accelerator syntax.</span>
+            </div>
+            <div class="field">
+              <label for="chordTimeoutMs">Chord picker timeout (ms)</label>
+              <input id="chordTimeoutMs" name="chordTimeoutMs" type="number" min="1500" max="30000" />
+            </div>
+          </div>
+
+          <div class="panel" style="margin-top: 18px; padding: 18px;">
+            <h3>Direct Slot Hotkeys</h3>
+            <p class="panel-note">
+              Direct mode registers the first nine slots. Higher slots stay available in the main window and chord mode.
+            </p>
+            <div id="shortcut-grid" class="shortcut-grid"></div>
+          </div>
+
+          <div class="panel" style="margin-top: 18px; padding: 18px;">
+            <h3>Behavior</h3>
+            <div class="field-grid">
+              <div class="field">
+                <label for="maxHistory">Max saved items</label>
+                <input id="maxHistory" name="maxHistory" type="number" min="1" max="99" />
+              </div>
+              <div class="field">
+                <label for="clipboardPollIntervalMs">Clipboard poll interval (ms)</label>
+                <input
+                  id="clipboardPollIntervalMs"
+                  name="clipboardPollIntervalMs"
+                  type="number"
+                  min="150"
+                  max="5000"
+                />
+              </div>
+            </div>
+
+            <div class="toggle-group">
+              <label class="toggle-card">
+                <span class="toggle-head">
+                  <span>
+                    <strong>Deduplicate consecutive copies</strong>
+                    <span class="field-help">Skip adding a new slot when the latest saved text already matches.</span>
+                  </span>
+                  <input id="deduplicateConsecutive" name="deduplicateConsecutive" type="checkbox" />
+                </span>
+              </label>
+              <label class="toggle-card">
+                <span class="toggle-head">
+                  <span>
+                    <strong>Restore the user clipboard after paste</strong>
+                    <span class="field-help">Temporarily swaps the clipboard, then puts the old value back.</span>
+                  </span>
+                  <input id="restoreClipboardAfterPaste" name="restoreClipboardAfterPaste" type="checkbox" />
+                </span>
+              </label>
+              <label class="toggle-card">
+                <span class="toggle-head">
+                  <span>
+                    <strong>Launch on system startup</strong>
+                    <span class="field-help">Uses the platform login-item setting when available.</span>
+                  </span>
+                  <input id="startOnBoot" name="startOnBoot" type="checkbox" />
+                </span>
+              </label>
+              <label class="toggle-card">
+                <span class="toggle-head">
+                  <span>
+                    <strong>Persist history between restarts</strong>
+                    <span class="field-help">Turn this off for temporary, in-memory history only.</span>
+                  </span>
+                  <input id="persistHistory" name="persistHistory" type="checkbox" />
+                </span>
+              </label>
+            </div>
+          </div>
+
+          <div class="button-row" style="margin-top: 18px;">
+            <button id="save-button" class="button-primary" type="submit">Save Settings</button>
+            <button id="reset-shortcuts-button" class="button-secondary" type="button">Reset Shortcuts</button>
+            <button id="open-history-button" class="button-ghost" type="button">Open Main Window</button>
+            <button id="clear-history-button" class="button-danger" type="button">Clear History</button>
+          </div>
+        </form>
+      </section>
+
+      <section class="panel">
+        <h2>Hotkey Registration</h2>
+        <p class="panel-note">
+          Electron reports whether each shortcut could be claimed successfully on the current machine.
+        </p>
+        <div id="hotkey-warnings" class="status-pill-row"></div>
+        <div id="hotkey-status-list" class="status-list"></div>
+      </section>
+    </main>
+
+    <script src="./settings.js"></script>
+  </body>
+</html>

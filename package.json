@@ -1,0 +1,43 @@
+{
+  "name": "ctrl-cv-tool",
+  "version": "0.1.0",
+  "description": "Windows-first multi-slot clipboard manager built with Electron and TypeScript.",
+  "private": true,
+  "main": "dist/main/main.js",
+  "author": "Codex",
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "start": "npm run build && electron .",
+    "dev": "npm run start",
+    "typecheck": "tsc --noEmit",
+    "package": "npm run build && electron-builder --win portable",
+    "package:installer": "npm run build && electron-builder --win nsis"
+  },
+  "build": {
+    "appId": "com.bleem.ctrlcvtool",
+    "productName": "CtrlCVTool",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "dist/**/*",
+      "package.json"
+    ],
+    "asar": true,
+    "win": {
+      "target": "portable",
+      "signAndEditExecutable": false
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true
+    }
+  },
+  "devDependencies": {
+    "@types/node": "^22.15.3",
+    "electron": "^35.1.2",
+    "electron-builder": "^25.1.8",
+    "esbuild": "^0.25.2",
+    "typescript": "^5.8.3"
+  }
+}

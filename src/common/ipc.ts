@@ -1,0 +1,21 @@
+export const IPC_CHANNELS = {
+  settingsGet: "settings:get",
+  settingsSave: "settings:save",
+  settingsResetShortcuts: "settings:reset-shortcuts",
+  settingsChanged: "settings:changed",
+  historyGet: "history:get",
+  historyClear: "history:clear",
+  historyDelete: "history:delete",
+  historyTogglePin: "history:toggle-pin",
+  historyCopy: "history:copy",
+  historyPasteItem: "history:paste-item",
+  historyPasteSlot: "history:paste-slot",
+  historyChanged: "history:changed",
+  appOpenSettings: "app:open-settings",
+  appOpenHistory: "app:open-history",
+  hotkeysGetStatus: "hotkeys:get-status",
+  hotkeysChanged: "hotkeys:changed",
+  slotPickerGetContext: "slot-picker:get-context",
+  slotPickerSubmit: "slot-picker:submit",
+  slotPickerCancel: "slot-picker:cancel"
+} as const;
