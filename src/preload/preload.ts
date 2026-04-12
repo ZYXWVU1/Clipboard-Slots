@@ -1,6 +1,7 @@
 import { contextBridge, ipcRenderer, type IpcRendererEvent } from "electron";
 import { IPC_CHANNELS } from "../common/ipc";
 import type {
+  AppView,
   AppSettings,
   ClipboardHistoryItem,
   CtrlCvApi,
@@ -47,7 +48,9 @@ const api: CtrlCvApi = {
   onHistoryChanged: (callback) =>
     subscribe<ClipboardHistoryItem[]>(IPC_CHANNELS.historyChanged, callback),
   onHotkeysChanged: (callback) =>
-    subscribe<HotkeyStatus>(IPC_CHANNELS.hotkeysChanged, callback)
+    subscribe<HotkeyStatus>(IPC_CHANNELS.hotkeysChanged, callback),
+  onAppViewChanged: (callback) =>
+    subscribe<AppView>(IPC_CHANNELS.appShowView, callback)
 };
 
 contextBridge.exposeInMainWorld("ctrlCvApi", api);

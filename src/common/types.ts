@@ -53,6 +53,8 @@ export interface SaveSettingsResult {
   hotkeyStatus: HotkeyStatus;
 }
 
+export type AppView = "history" | "settings";
+
 export interface CtrlCvApi {
   getSettings: () => Promise<AppSettings>;
   saveSettings: (nextSettings: Partial<AppSettings>) => Promise<SaveSettingsResult>;
@@ -75,6 +77,7 @@ export interface CtrlCvApi {
     callback: (items: ClipboardHistoryItem[]) => void
   ) => () => void;
   onHotkeysChanged: (callback: (status: HotkeyStatus) => void) => () => void;
+  onAppViewChanged: (callback: (view: AppView) => void) => () => void;
 }
 
 declare global {

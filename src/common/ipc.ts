@@ -13,6 +13,7 @@ export const IPC_CHANNELS = {
   historyChanged: "history:changed",
   appOpenSettings: "app:open-settings",
   appOpenHistory: "app:open-history",
+  appShowView: "app:show-view",
   hotkeysGetStatus: "hotkeys:get-status",
   hotkeysChanged: "hotkeys:changed",
   slotPickerGetContext: "slot-picker:get-context",

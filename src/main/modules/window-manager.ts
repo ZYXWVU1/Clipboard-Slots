@@ -1,7 +1,9 @@
 import path from "node:path";
 import { BrowserWindow } from "electron";
+import { IPC_CHANNELS } from "../../common/ipc";
+import type { AppView } from "../../common/types";
 
-type WindowName = "history" | "settings" | "slot-picker";
+type WindowName = "history" | "slot-picker";
 
 const rendererPath = (...segments: string[]) =>
   path.join(__dirname, "..", "renderer", ...segments);
@@ -21,19 +23,14 @@ const baseWindowOptions = {
 
 export class WindowManager {
   private historyWindow: BrowserWindow | null = null;
-  private settingsWindow: BrowserWindow | null = null;
   private slotPickerWindow: BrowserWindow | null = null;
 
   openHistory(): void {
-    const window = this.getOrCreateWindow("history");
-    window.show();
-    window.focus();
+    this.showMainWindow("history");
   }
 
   openSettings(): void {
-    const window = this.getOrCreateWindow("settings");
-    window.show();
-    window.focus();
+    this.showMainWindow("settings");
   }
 
   openSlotPicker(): void {
@@ -47,7 +44,7 @@ export class WindowManager {
   }
 
   broadcast(channel: string, payload: unknown): void {
-    for (const window of [this.historyWindow, this.settingsWindow, this.slotPickerWindow]) {
+    for (const window of [this.historyWindow, this.slotPickerWindow]) {
       if (window && !window.isDestroyed()) {
         window.webContents.send(channel, payload);
       }
@@ -60,13 +57,25 @@ export class WindowManager {
       return this.historyWindow;
     }
 
-    if (name === "settings") {
-      this.settingsWindow ??= this.createSettingsWindow();
-      return this.settingsWindow;
-    }
-
     this.slotPickerWindow ??= this.createSlotPickerWindow();
     return this.slotPickerWindow;
+  }
+
+  private showMainWindow(view: AppView): void {
+    const window = this.getOrCreateWindow("history");
+    const sendView = () => {
+      window.webContents.send(IPC_CHANNELS.appShowView, view);
+    };
+
+    window.show();
+    window.focus();
+
+    if (window.webContents.isLoadingMainFrame()) {
+      window.webContents.once("did-finish-load", sendView);
+      return;
+    }
+
+    sendView();
   }
 
   private createHistoryWindow(): BrowserWindow {
@@ -81,21 +90,6 @@ export class WindowManager {
 
     this.attachLifecycle(window, "history");
     void window.loadFile(rendererPath("history.html"));
-    return window;
-  }
-
-  private createSettingsWindow(): BrowserWindow {
-    const window = new BrowserWindow({
-      ...baseWindowOptions,
-      title: "CtrlCVTool Settings",
-      width: 960,
-      height: 760,
-      minWidth: 860,
-      minHeight: 680
-    });
-
-    this.attachLifecycle(window, "settings");
-    void window.loadFile(rendererPath("settings.html"));
     return window;
   }
 
@@ -122,10 +116,6 @@ export class WindowManager {
     window.on("closed", () => {
       if (name === "history") {
         this.historyWindow = null;
-        return;
-      }
-      if (name === "settings") {
-        this.settingsWindow = null;
         return;
       }
       this.slotPickerWindow = null;

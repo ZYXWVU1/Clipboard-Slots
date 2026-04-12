@@ -40,14 +40,50 @@ body {
 }
 
 body {
-  padding: 28px;
+  min-height: 100vh;
+  padding: clamp(18px, 2vw, 30px);
+}
+
+[hidden] {
+  display: none !important;
 }
 
 .app-shell {
   display: grid;
-  gap: 18px;
-  max-width: 1180px;
+  gap: clamp(18px, 2.5vh, 32px);
+  width: min(1380px, 100%);
   margin: 0 auto;
+  min-height: calc(100vh - (clamp(18px, 2vw, 30px) * 2));
+}
+
+.view-shell {
+  display: grid;
+  gap: clamp(18px, 2.5vh, 32px);
+  min-height: calc(100vh - (clamp(18px, 2vw, 30px) * 2));
+}
+
+.history-shell {
+  grid-template-rows: auto auto minmax(0, 1fr);
+}
+
+.settings-shell {
+  grid-template-rows: auto minmax(0, 1fr);
+}
+
+.settings-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.55fr) minmax(320px, 0.95fr);
+  gap: clamp(18px, 2vw, 28px);
+  align-items: start;
+}
+
+.stack-section {
+  display: grid;
+  gap: clamp(18px, 2vh, 24px);
+}
+
+.panel-fill {
+  height: 100%;
 }
 
 .hero,
@@ -63,7 +99,9 @@ body {
 }
 
 .hero {
-  padding: 28px;
+  display: grid;
+  gap: 22px;
+  padding: clamp(22px, 2.4vw, 32px);
   border-radius: var(--radius-xl);
 }
 
@@ -81,6 +119,7 @@ body {
 .hero-top,
 .toolbar,
 .button-row,
+.hero-actions,
 .field-grid,
 .summary-grid,
 .history-list,
@@ -93,9 +132,26 @@ body {
 .hero-top,
 .toolbar,
 .button-row,
+.hero-actions,
 .summary-grid {
   flex-wrap: wrap;
   align-items: center;
+}
+
+.hero-top {
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 20px;
+}
+
+.hero-copy {
+  display: grid;
+  gap: 14px;
+  max-width: min(780px, 100%);
+}
+
+.hero-actions {
+  justify-content: flex-end;
 }
 
 .hero-title {
@@ -118,7 +174,7 @@ body {
 
 .hero-subtitle {
   max-width: 760px;
-  margin: 14px 0 0;
+  margin: 0;
   font-size: 1rem;
 }
 
@@ -160,7 +216,7 @@ body {
 }
 
 .panel {
-  padding: 22px;
+  padding: clamp(20px, 2vw, 24px);
   border-radius: var(--radius-lg);
 }
 
@@ -317,7 +373,7 @@ button:disabled {
 
 .summary-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
 }
 
 .summary-card {
@@ -344,6 +400,11 @@ button:disabled {
 
 .history-list {
   margin-top: 18px;
+}
+
+.items-panel {
+  display: grid;
+  align-content: start;
 }
 
 .item-card {
@@ -431,16 +492,18 @@ button:disabled {
 }
 
 @media (max-width: 720px) {
-  body {
-    padding: 18px;
-  }
-
   .hero,
   .panel {
     padding: 20px;
   }
 
   .shortcut-row {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 1120px) {
+  .settings-layout {
     grid-template-columns: 1fr;
   }
 }
