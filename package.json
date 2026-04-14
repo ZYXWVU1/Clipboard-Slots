@@ -1,7 +1,7 @@
 {
-  "name": "ctrl-cv-tool",
+  "name": "clipboard-slots",
   "version": "0.1.0",
-  "description": "Windows-first multi-slot clipboard manager built with Electron and TypeScript.",
+  "description": "Windows-first clipboard slot manager built with Electron and TypeScript.",
   "private": true,
   "main": "dist/main/main.js",
   "author": "Bleem",
@@ -14,8 +14,8 @@
     "package:installer": "npm run build && electron-builder --win nsis"
   },
   "build": {
-    "appId": "com.bleem.ctrlcvtool",
-    "productName": "CtrlCVTool",
+    "appId": "com.bleem.clipboardslots",
+    "productName": "Clipboard Slots",
     "directories": {
       "output": "release"
     },
@@ -26,6 +26,7 @@
     "asar": true,
     "win": {
       "target": "portable",
+      "icon": "build/icon.ico",
       "signAndEditExecutable": false
     },
     "nsis": {

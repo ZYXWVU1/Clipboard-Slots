@@ -1,6 +1,6 @@
-# CtrlCVTool
+# Clipboard Slots
 
-CtrlCVTool is a Windows-first Electron + TypeScript clipboard utility that stores copied text in ordered slots and lets you paste a specific saved slot with a global shortcut.
+Clipboard Slots is a Windows-first Electron + TypeScript clipboard utility that stores copied text in ordered slots and lets you paste a specific saved slot with a global shortcut.
 
 ## Current app structure
 
@@ -90,7 +90,7 @@ Available actions from the main window:
 ### Copy flow
 
 1. Copy text normally with `Ctrl+C`
-2. CtrlCVTool detects the clipboard change
+2. Clipboard Slots detects the clipboard change
 3. The copied text is appended as the next slot
 
 Slot numbering matches copy order exactly:
@@ -108,7 +108,7 @@ In direct mode, the default shortcuts are:
 - `Ctrl+Alt+3`
 - through `Ctrl+Alt+9`
 
-When a slot hotkey is triggered, CtrlCVTool:
+When a slot hotkey is triggered, Clipboard Slots:
 
 1. fetches the saved slot content
 2. places it on the clipboard temporarily
@@ -155,7 +155,7 @@ Settings and optional persisted history are stored locally in Electron's user-da
 Typical Windows location:
 
 ```text
-%APPDATA%\CtrlCVTool\storage\
+%APPDATA%\Clipboard Slots\storage\
 ```
 
 Files used there:

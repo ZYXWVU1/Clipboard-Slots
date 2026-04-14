@@ -114,9 +114,9 @@ export type TranslationKey =
 
 const translations: Record<SupportedLocale, Record<TranslationKey, string>> = {
   en: {
-    "app.title": "CtrlCVTool",
+    "app.title": "Clipboard Slots",
     "history.badge": "Desktop Clipboard Utility",
-    "history.title": "CtrlCVTool",
+    "history.title": "Clipboard Slots",
     "history.subtitle":
       "Copy text normally, keep each item in ordered slots, and paste a specific saved slot with global shortcuts or from this window.",
     "nav.savedSlots": "Saved Slots",
@@ -145,7 +145,7 @@ const translations: Record<SupportedLocale, Record<TranslationKey, string>> = {
     "history.slotLabel": "Slot {slot}",
     "history.charCount": "{count} chars",
     "history.contentType.text": "Text",
-    "settings.title": "Configure CtrlCVTool",
+    "settings.title": "Configure Clipboard Slots",
     "settings.subtitle":
       "Adjust slot shortcuts, history size, startup behavior, and clipboard handling without leaving the main window.",
     "settings.back": "Back To Saved Slots",
@@ -203,7 +203,7 @@ const translations: Record<SupportedLocale, Record<TranslationKey, string>> = {
     "message.shortcutsResetFailed": "Shortcut reset failed.",
     "message.historyCleared": "Clipboard history cleared.",
     "message.historyClearFailed": "Clipboard history could not be cleared.",
-    "picker.windowTitle": "CtrlCVTool Slot Picker",
+    "picker.windowTitle": "Clipboard Slots Slot Picker",
     "picker.badge": "Chord Mode",
     "picker.title": "Pick a Slot",
     "picker.subtitle":
@@ -234,15 +234,15 @@ const translations: Record<SupportedLocale, Record<TranslationKey, string>> = {
     "hotkey.conflictSlot": "Conflicts with slot {slot}.",
     "hotkey.registerFailed": "Electron could not register this shortcut.",
     "hotkey.invalidSyntax": "Invalid accelerator syntax.",
-    "tray.openApp": "Open CtrlCVTool",
+    "tray.openApp": "Open Clipboard Slots",
     "tray.openSettings": "Open Settings",
     "tray.clearHistory": "Clear History",
     "tray.quit": "Quit"
   },
   "zh-CN": {
-    "app.title": "CtrlCVTool",
+    "app.title": "Clipboard Slots",
     "history.badge": "桌面剪贴板工具",
-    "history.title": "CtrlCVTool",
+    "history.title": "Clipboard Slots",
     "history.subtitle":
       "像平时一样复制文本，应用会按顺序保存到槽位中，你可以通过全局快捷键或当前窗口粘贴指定槽位。",
     "nav.savedSlots": "已保存槽位",
@@ -269,7 +269,7 @@ const translations: Record<SupportedLocale, Record<TranslationKey, string>> = {
     "history.slotLabel": "槽位 {slot}",
     "history.charCount": "{count} 个字符",
     "history.contentType.text": "文本",
-    "settings.title": "配置 CtrlCVTool",
+    "settings.title": "配置 Clipboard Slots",
     "settings.subtitle":
       "无需离开主窗口即可调整槽位快捷键、历史数量、启动行为和剪贴板处理方式。",
     "settings.back": "返回已保存槽位",
@@ -321,7 +321,7 @@ const translations: Record<SupportedLocale, Record<TranslationKey, string>> = {
     "message.shortcutsResetFailed": "快捷键重置失败。",
     "message.historyCleared": "剪贴板历史已清空。",
     "message.historyClearFailed": "无法清空剪贴板历史。",
-    "picker.windowTitle": "CtrlCVTool 槽位选择器",
+    "picker.windowTitle": "Clipboard Slots 槽位选择器",
     "picker.badge": "和弦模式",
     "picker.title": "选择槽位",
     "picker.subtitle": "输入槽位编号后按回车，或者直接点击下面的项目进行粘贴。",
@@ -349,7 +349,7 @@ const translations: Record<SupportedLocale, Record<TranslationKey, string>> = {
     "hotkey.conflictSlot": "与槽位 {slot} 冲突。",
     "hotkey.registerFailed": "Electron 无法注册这个快捷键。",
     "hotkey.invalidSyntax": "快捷键语法无效。",
-    "tray.openApp": "打开 CtrlCVTool",
+    "tray.openApp": "打开 Clipboard Slots",
     "tray.openSettings": "打开设置",
     "tray.clearHistory": "清空历史",
     "tray.quit": "退出"
