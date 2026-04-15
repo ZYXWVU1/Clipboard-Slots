@@ -117,6 +117,7 @@ const registerIpcHandlers = (
 
 const main = async () => {
   await app.whenReady();
+  app.setAppUserModelId("com.bleem.clipboardslots");
 
   const hiddenLaunch =
     process.argv.includes("--hidden") || process.argv.includes("--launch-at-startup");

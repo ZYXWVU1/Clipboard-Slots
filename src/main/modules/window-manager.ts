@@ -3,6 +3,7 @@ import { BrowserWindow } from "electron";
 import { DEFAULT_LOCALE, t } from "../../common/i18n";
 import { IPC_CHANNELS } from "../../common/ipc";
 import type { AppView, SupportedLocale } from "../../common/types";
+import { getAppIcon } from "./icon-manager";
 
 type WindowName = "history" | "slot-picker";
 
@@ -15,6 +16,7 @@ const baseWindowOptions = {
   autoHideMenuBar: true,
   show: false,
   backgroundColor: "#102130",
+  icon: getAppIcon(),
   webPreferences: {
     preload: preloadPath,
     contextIsolation: true,

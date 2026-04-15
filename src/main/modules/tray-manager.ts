@@ -1,21 +1,8 @@
-import { Menu, Tray, nativeImage } from "electron";
+import { Menu, Tray } from "electron";
 import { DEFAULT_LOCALE, t } from "../../common/i18n";
 import type { SupportedLocale } from "../../common/types";
 
-const traySvg = `
-<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64">
-  <rect width="64" height="64" rx="16" fill="#122739"/>
-  <rect x="12" y="14" width="40" height="36" rx="8" fill="#f4efe7"/>
-  <rect x="18" y="22" width="28" height="4" rx="2" fill="#cc613a"/>
-  <rect x="18" y="31" width="20" height="4" rx="2" fill="#2c6176"/>
-  <rect x="18" y="40" width="24" height="4" rx="2" fill="#2c6176"/>
-</svg>
-`;
-
-const buildTrayIcon = () =>
-  nativeImage.createFromDataURL(
-    `data:image/svg+xml;base64,${Buffer.from(traySvg).toString("base64")}`
-  );
+import { getTrayIcon } from "./icon-manager";
 
 interface TrayActions {
   openHistory: () => void;
@@ -34,7 +21,7 @@ export class TrayManager {
     this.locale = locale;
 
     if (!this.tray) {
-      this.tray = new Tray(buildTrayIcon());
+      this.tray = new Tray(getTrayIcon());
       this.tray.on("double-click", actions.openHistory);
     }
 
