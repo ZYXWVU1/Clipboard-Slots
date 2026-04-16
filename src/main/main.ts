@@ -12,6 +12,7 @@ import type {
 import { ClipboardWatcher } from "./modules/clipboard-watcher";
 import { HistoryStore } from "./modules/history-store";
 import { HotkeyManager } from "./modules/hotkey-manager";
+import { ImageStore } from "./modules/image-store";
 import { PasteEngine } from "./modules/paste-engine";
 import { SettingsManager } from "./modules/settings-manager";
 import { StartupManager } from "./modules/startup-manager";
@@ -85,9 +86,6 @@ const registerIpcHandlers = (
   ipcMain.handle(IPC_CHANNELS.historyCopy, (_event, id: string) =>
     pasteEngine.copyHistoryItem(id)
   );
-  ipcMain.handle(IPC_CHANNELS.historyPasteItem, (_event, id: string) =>
-    pasteEngine.pasteHistoryItem(id)
-  );
   ipcMain.handle(IPC_CHANNELS.historyPasteSlot, (_event, slot: number) =>
     pasteEngine.pasteSlot(slot)
   );
@@ -124,12 +122,22 @@ const main = async () => {
   const storageDirectory = path.join(app.getPath("userData"), "storage");
   const settingsManager = new SettingsManager(storageDirectory);
   const settings = settingsManager.load();
-  const historyStore = new HistoryStore(storageDirectory, () => settingsManager.getSettings());
+  const imageStore = new ImageStore(storageDirectory);
+  const historyStore = new HistoryStore(
+    storageDirectory,
+    imageStore,
+    () => settingsManager.getSettings()
+  );
   historyStore.load();
 
   const windowManager = new WindowManager();
   const clipboardWatcher = new ClipboardWatcher(historyStore, () => settingsManager.getSettings());
-  const pasteEngine = new PasteEngine(historyStore, settingsManager, clipboardWatcher);
+  const pasteEngine = new PasteEngine(
+    historyStore,
+    settingsManager,
+    clipboardWatcher,
+    imageStore
+  );
   const hotkeyManager = new HotkeyManager(
     (slot) => pasteEngine.pasteSlot(slot),
     () => windowManager.openSlotPicker()
@@ -210,9 +218,9 @@ const main = async () => {
     trayManager.destroy();
   });
 
-  app.on("window-all-closed", (event) => {
+  app.on("window-all-closed", () => {
     if (!isQuitting) {
-      event.preventDefault();
+      return;
     }
   });
 

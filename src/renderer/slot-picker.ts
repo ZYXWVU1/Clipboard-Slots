@@ -27,33 +27,56 @@ const translate = (
 const applyStaticTranslations = () => {
   document.documentElement.lang = locale;
 
-  for (const element of document.querySelectorAll<HTMLElement>("[data-i18n]")) {
+  document.querySelectorAll<HTMLElement>("[data-i18n]").forEach((element) => {
     const key = element.dataset.i18n as TranslationKey | undefined;
     if (!key) {
-      continue;
+      return;
     }
 
     const message = t(locale, key);
     if (element.tagName === "TITLE") {
       document.title = message;
-      continue;
+      return;
     }
 
     element.textContent = message;
-  }
+  });
 
-  for (const element of document.querySelectorAll<HTMLInputElement>("[data-i18n-placeholder]")) {
+  document.querySelectorAll<HTMLInputElement>("[data-i18n-placeholder]").forEach((element) => {
     const key = element.dataset.i18nPlaceholder as TranslationKey | undefined;
     if (!key) {
-      continue;
+      return;
     }
 
     element.placeholder = t(locale, key);
-  }
+  });
 };
 
 const truncate = (value: string, maxLength = 120) =>
   value.length <= maxLength ? value : `${value.slice(0, maxLength)}...`;
+
+const renderPreview = (item: ClipboardHistoryItem) => {
+  const preview = document.createElement("div");
+  preview.className =
+    item.contentType === "image" ? "item-preview image-preview" : "item-preview";
+
+  if (item.contentType === "image") {
+    if (item.imagePreviewUrl) {
+      const image = document.createElement("img");
+      image.className = "slot-thumbnail";
+      image.src = item.imagePreviewUrl;
+      image.alt = translate("history.contentType.image");
+      preview.append(image);
+      return preview;
+    }
+
+    preview.textContent = translate("history.imageUnavailable");
+    return preview;
+  }
+
+  preview.textContent = truncate(item.content);
+  return preview;
+};
 
 const showBanner = (
   message: string,
@@ -108,9 +131,7 @@ const renderItems = (items: ClipboardHistoryItem[]) => {
 
     head.append(title, stamp);
 
-    const preview = document.createElement("div");
-    preview.className = "item-preview";
-    preview.textContent = truncate(item.content);
+    const preview = renderPreview(item);
 
     const actions = document.createElement("div");
     actions.className = "item-actions";

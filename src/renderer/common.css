@@ -442,6 +442,21 @@ button:disabled {
   line-height: 1.55;
 }
 
+.item-preview.image-preview {
+  display: grid;
+  place-items: center;
+  min-height: 180px;
+}
+
+.slot-thumbnail {
+  display: block;
+  max-width: 100%;
+  max-height: 240px;
+  border-radius: 12px;
+  object-fit: contain;
+  box-shadow: 0 16px 32px rgba(0, 0, 0, 0.28);
+}
+
 .editor-field {
   display: grid;
   gap: 10px;

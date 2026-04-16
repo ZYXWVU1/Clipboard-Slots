@@ -1,4 +1,4 @@
-export type ClipboardContentType = "text";
+export type ClipboardContentType = "text" | "image";
 export type HotkeyMode = "direct" | "chord";
 export type SupportedLocale = "en" | "zh-CN";
 
@@ -9,6 +9,10 @@ export interface ClipboardHistoryItem {
   contentType: ClipboardContentType;
   timestamp: string;
   pinned: boolean;
+  imageRelativePath?: string;
+  imageWidth?: number;
+  imageHeight?: number;
+  imagePreviewUrl?: string;
 }
 
 export interface AppSettings {
@@ -67,7 +71,6 @@ export interface CtrlCvApi {
   updateHistoryItem: (id: string, content: string) => Promise<ActionResult>;
   togglePin: (id: string) => Promise<void>;
   copyHistoryItem: (id: string) => Promise<ActionResult>;
-  pasteHistoryItem: (id: string) => Promise<ActionResult>;
   pasteSlot: (slot: number) => Promise<ActionResult>;
   openSettings: () => Promise<void>;
   openHistory: () => Promise<void>;

@@ -35,7 +35,6 @@ const api: CtrlCvApi = {
     ipcRenderer.invoke(IPC_CHANNELS.historyUpdate, { id, content }),
   togglePin: (id: string) => ipcRenderer.invoke(IPC_CHANNELS.historyTogglePin, id),
   copyHistoryItem: (id: string) => ipcRenderer.invoke(IPC_CHANNELS.historyCopy, id),
-  pasteHistoryItem: (id: string) => ipcRenderer.invoke(IPC_CHANNELS.historyPasteItem, id),
   pasteSlot: (slot: number) => ipcRenderer.invoke(IPC_CHANNELS.historyPasteSlot, slot),
   openSettings: () => ipcRenderer.invoke(IPC_CHANNELS.appOpenSettings),
   openHistory: () => ipcRenderer.invoke(IPC_CHANNELS.appOpenHistory),

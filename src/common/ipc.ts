@@ -9,7 +9,6 @@ export const IPC_CHANNELS = {
   historyUpdate: "history:update",
   historyTogglePin: "history:toggle-pin",
   historyCopy: "history:copy",
-  historyPasteItem: "history:paste-item",
   historyPasteSlot: "history:paste-slot",
   historyChanged: "history:changed",
   appOpenSettings: "app:open-settings",

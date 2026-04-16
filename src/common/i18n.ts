@@ -32,6 +32,9 @@ export type TranslationKey =
   | "history.slotLabel"
   | "history.charCount"
   | "history.contentType.text"
+  | "history.contentType.image"
+  | "history.imageDimensions"
+  | "history.imageUnavailable"
   | "settings.title"
   | "settings.subtitle"
   | "settings.back"
@@ -145,6 +148,9 @@ const translations: Record<SupportedLocale, Record<TranslationKey, string>> = {
     "history.slotLabel": "Slot {slot}",
     "history.charCount": "{count} chars",
     "history.contentType.text": "Text",
+    "history.contentType.image": "Image",
+    "history.imageDimensions": "{width} x {height} px",
+    "history.imageUnavailable": "Image unavailable",
     "settings.title": "Configure Clipboard Slots",
     "settings.subtitle":
       "Adjust slot shortcuts, history size, startup behavior, and clipboard handling without leaving the main window.",
@@ -269,6 +275,9 @@ const translations: Record<SupportedLocale, Record<TranslationKey, string>> = {
     "history.slotLabel": "槽位 {slot}",
     "history.charCount": "{count} 个字符",
     "history.contentType.text": "文本",
+    "history.contentType.image": "图片",
+    "history.imageDimensions": "{width} x {height} 像素",
+    "history.imageUnavailable": "图片不可用",
     "settings.title": "配置 Clipboard Slots",
     "settings.subtitle":
       "无需离开主窗口即可调整槽位快捷键、历史数量、启动行为和剪贴板处理方式。",

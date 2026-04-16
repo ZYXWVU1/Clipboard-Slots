@@ -80,31 +80,31 @@ const applyStaticTranslations = () => {
   const locale = getLocale();
   document.documentElement.lang = locale;
 
-  for (const element of document.querySelectorAll<HTMLElement>("[data-i18n]")) {
+  document.querySelectorAll<HTMLElement>("[data-i18n]").forEach((element) => {
     const key = element.dataset.i18n as TranslationKey | undefined;
     if (!key) {
-      continue;
+      return;
     }
 
     const message = t(locale, key);
     if (element.tagName === "TITLE") {
       document.title = message;
-      continue;
+      return;
     }
 
     element.textContent = message;
-  }
+  });
 
-  for (const element of document.querySelectorAll<
+  document.querySelectorAll<
     HTMLInputElement | HTMLTextAreaElement
-  >("[data-i18n-placeholder]")) {
+  >("[data-i18n-placeholder]").forEach((element) => {
     const key = element.dataset.i18nPlaceholder as TranslationKey | undefined;
     if (!key) {
-      continue;
+      return;
     }
 
     element.placeholder = t(locale, key);
-  }
+  });
 };
 
 const showBanner = (
@@ -149,7 +149,53 @@ const getContentTypeLabel = (item: ClipboardHistoryItem) => {
     return translate("history.contentType.text");
   }
 
-  return item.contentType;
+  return translate("history.contentType.image");
+};
+
+const renderTextPreview = (item: ClipboardHistoryItem) => {
+  const preview = document.createElement("div");
+  preview.className = "item-preview";
+
+  if (editingItemId === item.id) {
+    const editorField = document.createElement("label");
+    editorField.className = "editor-field";
+
+    const editorLabel = document.createElement("span");
+    editorLabel.className = "field-help";
+    editorLabel.textContent = translate("history.editLabel");
+
+    const editor = document.createElement("textarea");
+    editor.className = "slot-editor";
+    editor.rows = 5;
+    editor.value = editingDraft;
+    editor.addEventListener("input", () => {
+      editingDraft = editor.value;
+    });
+
+    editorField.append(editorLabel, editor);
+    preview.append(editorField);
+    return preview;
+  }
+
+  preview.textContent = truncate(item.content);
+  return preview;
+};
+
+const renderImagePreview = (item: ClipboardHistoryItem) => {
+  const preview = document.createElement("div");
+  preview.className = "item-preview image-preview";
+
+  if (item.imagePreviewUrl) {
+    const image = document.createElement("img");
+    image.className = "slot-thumbnail";
+    image.src = item.imagePreviewUrl;
+    image.alt = translate("history.contentType.image");
+    preview.append(image);
+    return preview;
+  }
+
+  preview.textContent = translate("history.imageUnavailable");
+  return preview;
 };
 
 const renderSummary = () => {
@@ -224,7 +270,12 @@ const renderHistory = () => {
     for (const value of [
       getContentTypeLabel(item),
       formatTimestamp(item.timestamp),
-      translate("history.charCount", { count: item.content.length }),
+      item.contentType === "text"
+        ? translate("history.charCount", { count: item.content.length })
+        : translate("history.imageDimensions", {
+            width: item.imageWidth ?? "?",
+            height: item.imageHeight ?? "?"
+          }),
       item.pinned ? translate("history.pinned") : translate("history.unpinned")
     ]) {
       const chip = document.createElement("span");
@@ -242,29 +293,10 @@ const renderHistory = () => {
 
     head.append(titleBlock, status);
 
-    const preview = document.createElement("div");
-    preview.className = "item-preview";
-    if (editingItemId === item.id) {
-      const editorField = document.createElement("label");
-      editorField.className = "editor-field";
-
-      const editorLabel = document.createElement("span");
-      editorLabel.className = "field-help";
-      editorLabel.textContent = translate("history.editLabel");
-
-      const editor = document.createElement("textarea");
-      editor.className = "slot-editor";
-      editor.rows = 5;
-      editor.value = editingDraft;
-      editor.addEventListener("input", () => {
-        editingDraft = editor.value;
-      });
-
-      editorField.append(editorLabel, editor);
-      preview.append(editorField);
-    } else {
-      preview.textContent = truncate(item.content);
-    }
+    const preview =
+      item.contentType === "image"
+        ? renderImagePreview(item)
+        : renderTextPreview(item);
 
     const actions = document.createElement("div");
     actions.className = "item-actions";
@@ -278,36 +310,39 @@ const renderHistory = () => {
     });
 
     const editButton = document.createElement("button");
-    if (editingItemId === item.id) {
-      editButton.className = "button-primary";
-      editButton.textContent = translate("history.saveEdit");
-      editButton.addEventListener("click", async () => {
-        const result = await window.ctrlCvApi.updateHistoryItem(item.id, editingDraft);
-        showBanner(historyStatusBanner, result.message, result.ok ? "success" : "error");
-        if (result.ok) {
+    let cancelEditButton: HTMLButtonElement | null = null;
+    if (item.contentType === "text") {
+      if (editingItemId === item.id) {
+        editButton.className = "button-primary";
+        editButton.textContent = translate("history.saveEdit");
+        editButton.addEventListener("click", async () => {
+          const result = await window.ctrlCvApi.updateHistoryItem(item.id, editingDraft);
+          showBanner(historyStatusBanner, result.message, result.ok ? "success" : "error");
+          if (result.ok) {
+            editingItemId = null;
+            editingDraft = "";
+            renderHistory();
+          }
+        });
+
+        cancelEditButton = document.createElement("button");
+        cancelEditButton.className = "button-secondary";
+        cancelEditButton.textContent = translate("history.cancelEdit");
+        cancelEditButton.addEventListener("click", () => {
           editingItemId = null;
           editingDraft = "";
           renderHistory();
-        }
-      });
-    } else {
-      editButton.className = "button-primary";
-      editButton.textContent = translate("history.edit");
-      editButton.addEventListener("click", () => {
-        editingItemId = item.id;
-        editingDraft = item.content;
-        renderHistory();
-      });
+        });
+      } else {
+        editButton.className = "button-primary";
+        editButton.textContent = translate("history.edit");
+        editButton.addEventListener("click", () => {
+          editingItemId = item.id;
+          editingDraft = item.content;
+          renderHistory();
+        });
+      }
     }
-
-    const cancelEditButton = document.createElement("button");
-    cancelEditButton.className = "button-secondary";
-    cancelEditButton.textContent = translate("history.cancelEdit");
-    cancelEditButton.addEventListener("click", () => {
-      editingItemId = null;
-      editingDraft = "";
-      renderHistory();
-    });
 
     const pinButton = document.createElement("button");
     pinButton.className = "button-ghost";
@@ -325,9 +360,12 @@ const renderHistory = () => {
       await window.ctrlCvApi.deleteHistoryItem(item.id);
     });
 
-    actions.append(copyButton, editButton);
-    if (editingItemId === item.id) {
-      actions.append(cancelEditButton);
+    actions.append(copyButton);
+    if (item.contentType === "text") {
+      actions.append(editButton);
+      if (editingItemId === item.id && cancelEditButton) {
+        actions.append(cancelEditButton);
+      }
     }
     actions.append(pinButton, deleteButton);
     card.append(head, preview, actions);

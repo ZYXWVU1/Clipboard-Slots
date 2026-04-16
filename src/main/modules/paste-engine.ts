@@ -1,9 +1,11 @@
+import { createHash } from "node:crypto";
 import { spawn } from "node:child_process";
-import { clipboard } from "electron";
+import { clipboard, nativeImage, type NativeImage } from "electron";
 import { t } from "../../common/i18n";
 import type { ActionResult, ClipboardHistoryItem } from "../../common/types";
 import { ClipboardWatcher } from "./clipboard-watcher";
 import { HistoryStore } from "./history-store";
+import { ImageStore } from "./image-store";
 import { SettingsManager } from "./settings-manager";
 
 const delay = (ms: number) =>
@@ -16,34 +18,30 @@ const failed = (message: string): ActionResult => ({
   message
 });
 
+type ClipboardSnapshot =
+  | { kind: "empty" }
+  | { kind: "text"; text: string }
+  | { kind: "image"; image: NativeImage; fingerprint: string };
+
 export class PasteEngine {
   constructor(
     private readonly historyStore: HistoryStore,
     private readonly settingsManager: SettingsManager,
-    private readonly clipboardWatcher: ClipboardWatcher
+    private readonly clipboardWatcher: ClipboardWatcher,
+    private readonly imageStore: ImageStore
   ) {}
 
   async copyHistoryItem(id: string): Promise<ActionResult> {
     const item = this.historyStore.getById(id);
     const locale = this.settingsManager.getSettings().locale;
-    if (!item) {
+    if (!item || !this.writeItemToClipboard(item)) {
       return failed(t(locale, "action.itemUnavailable"));
     }
-    this.clipboardWatcher.suppressText(item.content);
-    clipboard.writeText(item.content);
+
     return {
       ok: true,
       message: t(locale, "action.copiedSlot", { slot: item.slot })
     };
-  }
-
-  async pasteHistoryItem(id: string): Promise<ActionResult> {
-    const item = this.historyStore.getById(id);
-    const locale = this.settingsManager.getSettings().locale;
-    if (!item) {
-      return failed(t(locale, "action.itemUnavailable"));
-    }
-    return this.pasteItem(item);
   }
 
   async pasteSlot(slot: number): Promise<ActionResult> {
@@ -52,17 +50,72 @@ export class PasteEngine {
     if (!item) {
       return failed(t(locale, "action.slotEmpty", { slot }));
     }
+
     return this.pasteItem(item);
+  }
+
+  private captureClipboardSnapshot(): ClipboardSnapshot {
+    const image = clipboard.readImage();
+    if (!image.isEmpty()) {
+      return {
+        kind: "image",
+        image,
+        fingerprint: createHash("sha256").update(image.toPNG()).digest("hex")
+      };
+    }
+
+    const text = clipboard.readText();
+    if (text) {
+      return { kind: "text", text };
+    }
+
+    return { kind: "empty" };
+  }
+
+  private writeItemToClipboard(item: ClipboardHistoryItem, suppressMs = 5000): boolean {
+    if (item.contentType === "image") {
+      if (!item.imageRelativePath || !this.imageStore.exists(item.imageRelativePath)) {
+        return false;
+      }
+
+      const pngBytes = this.imageStore.read(item.imageRelativePath);
+      const image = nativeImage.createFromBuffer(pngBytes);
+      this.clipboardWatcher.suppressImage(
+        createHash("sha256").update(pngBytes).digest("hex"),
+        suppressMs
+      );
+      clipboard.writeImage(image);
+      return true;
+    }
+
+    this.clipboardWatcher.suppressText(item.content, suppressMs);
+    clipboard.writeText(item.content);
+    return true;
+  }
+
+  private restoreClipboardSnapshot(snapshot: ClipboardSnapshot, suppressMs = 5500): void {
+    if (snapshot.kind === "image") {
+      this.clipboardWatcher.suppressImage(snapshot.fingerprint, suppressMs);
+      clipboard.writeImage(snapshot.image);
+      return;
+    }
+
+    if (snapshot.kind === "text") {
+      this.clipboardWatcher.suppressText(snapshot.text, suppressMs);
+      clipboard.writeText(snapshot.text);
+    }
   }
 
   private async pasteItem(item: ClipboardHistoryItem): Promise<ActionResult> {
     const settings = this.settingsManager.getSettings();
     const previousClipboard = settings.restoreClipboardAfterPaste
-      ? clipboard.readText()
-      : null;
+      ? this.captureClipboardSnapshot()
+      : { kind: "empty" as const };
 
-    this.clipboardWatcher.suppressText(item.content, 5000);
-    clipboard.writeText(item.content);
+    if (!this.writeItemToClipboard(item)) {
+      return failed(t(settings.locale, "action.itemUnavailable"));
+    }
+
     await delay(80);
 
     try {
@@ -71,11 +124,10 @@ export class PasteEngine {
       return failed(t(settings.locale, "action.pasteFailed"));
     }
 
-    if (previousClipboard !== null) {
+    if (previousClipboard.kind !== "empty") {
       const restoreDelayMs = 350;
-      this.clipboardWatcher.suppressText(previousClipboard, restoreDelayMs + 5000);
       setTimeout(() => {
-        clipboard.writeText(previousClipboard);
+        this.restoreClipboardSnapshot(previousClipboard, restoreDelayMs + 5000);
       }, restoreDelayMs);
     }
 
@@ -122,6 +174,7 @@ export class PasteEngine {
           resolve();
           return;
         }
+
         reject(new Error(`${command} exited with code ${code}`));
       });
     });
