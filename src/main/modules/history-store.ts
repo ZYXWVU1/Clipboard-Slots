@@ -82,20 +82,14 @@ export class HistoryStore extends EventEmitter {
     }
 
     const id = randomUUID();
-    const nextItem: StoredHistoryItem = {
+    return this.appendItemAndReturn(id, settings.maxHistory, {
       id,
       slot: this.items.length + 1,
       content,
       contentType: "text",
       timestamp: new Date().toISOString(),
       pinned: false
-    };
-
-    this.items.push(nextItem);
-    this.enforceMaxHistory(settings.maxHistory);
-    this.recalculateSlots();
-    this.persistAndEmit();
-    return this.getById(id) ?? null;
+    });
   }
 
   addImage(input: {
@@ -117,7 +111,7 @@ export class HistoryStore extends EventEmitter {
     try {
       const id = randomUUID();
       const imageRelativePath = this.imageStore.savePng(id, input.pngBytes);
-      const nextItem: StoredHistoryItem = {
+      return this.appendItemAndReturn(id, settings.maxHistory, {
         id,
         slot: this.items.length + 1,
         content: IMAGE_CONTENT_LABEL,
@@ -128,13 +122,7 @@ export class HistoryStore extends EventEmitter {
         imageWidth: input.width,
         imageHeight: input.height,
         imageFingerprint: input.fingerprint
-      };
-
-      this.items.push(nextItem);
-      this.enforceMaxHistory(settings.maxHistory);
-      this.recalculateSlots();
-      this.persistAndEmit();
-      return this.getById(id) ?? null;
+      });
     } catch {
       return null;
     }
@@ -324,6 +312,18 @@ export class HistoryStore extends EventEmitter {
       ...item,
       slot: index + 1
     }));
+  }
+
+  private appendItemAndReturn(
+    id: string,
+    maxHistory: number,
+    nextItem: StoredHistoryItem
+  ): ClipboardHistoryItem | null {
+    this.items.push(nextItem);
+    this.enforceMaxHistory(maxHistory);
+    this.recalculateSlots();
+    this.persistAndEmit();
+    return this.getById(id) ?? null;
   }
 
   private persistIfEnabled(): void {
