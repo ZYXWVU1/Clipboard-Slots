@@ -148,8 +148,8 @@ export class SettingsManager extends EventEmitter {
 
   private persistEmitAndReturn(): AppSettings {
     this.store.save(this.settings);
-    const clonedSettings = this.getSettings();
-    this.emit("updated", clonedSettings);
-    return clonedSettings;
+    const emittedSettings = this.getSettings();
+    this.emit("updated", emittedSettings);
+    return this.getSettings();
   }
 }
