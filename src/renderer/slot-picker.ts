@@ -4,6 +4,7 @@ import type {
   SlotPickerContext,
   SupportedLocale
 } from "../common/types";
+import { applyStaticTranslations, truncateText } from "./shared";
 
 const form = document.querySelector<HTMLFormElement>("#picker-form");
 const slotInput = document.querySelector<HTMLInputElement>("#slot-input");
@@ -24,37 +25,6 @@ const translate = (
   params: Record<string, string | number> = {}
 ): string => t(locale, key, params);
 
-const applyStaticTranslations = () => {
-  document.documentElement.lang = locale;
-
-  document.querySelectorAll<HTMLElement>("[data-i18n]").forEach((element) => {
-    const key = element.dataset.i18n as TranslationKey | undefined;
-    if (!key) {
-      return;
-    }
-
-    const message = t(locale, key);
-    if (element.tagName === "TITLE") {
-      document.title = message;
-      return;
-    }
-
-    element.textContent = message;
-  });
-
-  document.querySelectorAll<HTMLInputElement>("[data-i18n-placeholder]").forEach((element) => {
-    const key = element.dataset.i18nPlaceholder as TranslationKey | undefined;
-    if (!key) {
-      return;
-    }
-
-    element.placeholder = t(locale, key);
-  });
-};
-
-const truncate = (value: string, maxLength = 120) =>
-  value.length <= maxLength ? value : `${value.slice(0, maxLength)}...`;
-
 const renderPreview = (item: ClipboardHistoryItem) => {
   const preview = document.createElement("div");
   preview.className =
@@ -74,7 +44,7 @@ const renderPreview = (item: ClipboardHistoryItem) => {
     return preview;
   }
 
-  preview.textContent = truncate(item.content);
+  preview.textContent = truncateText(item.content, 120);
   return preview;
 };
 
@@ -158,7 +128,7 @@ const initialize = async () => {
 
   context = nextContext;
   locale = settings.locale;
-  applyStaticTranslations();
+  applyStaticTranslations(locale);
   renderItems(context.items);
   slotInput.focus();
   slotInput.select();
@@ -207,11 +177,11 @@ window.ctrlCvApi.onHistoryChanged((items) => {
 
 window.ctrlCvApi.onSettingsChanged((settings) => {
   locale = settings.locale;
-  applyStaticTranslations();
+  applyStaticTranslations(locale);
   if (context) {
     renderItems(context.items);
   }
 });
 
-applyStaticTranslations();
+applyStaticTranslations(locale);
 void initialize();
