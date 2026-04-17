@@ -47,7 +47,6 @@ await build({
 await build({
   entryPoints: {
     history: path.join(projectRoot, "src", "renderer", "history.ts"),
-    settings: path.join(projectRoot, "src", "renderer", "settings.ts"),
     "slot-picker": path.join(projectRoot, "src", "renderer", "slot-picker.ts")
   },
   bundle: true,
@@ -60,7 +59,6 @@ await build({
 
 for (const asset of [
   "history.html",
-  "settings.html",
   "slot-picker.html",
   "common.css"
 ]) {

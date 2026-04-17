@@ -7,6 +7,7 @@ import type {
   HotkeyStatus,
   SupportedLocale
 } from "../common/types";
+import { applyStaticTranslations, truncateText } from "./shared";
 
 interface SettingsState {
   settings: AppSettings;
@@ -72,40 +73,6 @@ const formatTimestamp = (value: string) =>
     dateStyle: "medium",
     timeStyle: "short"
   }).format(new Date(value));
-
-const truncate = (value: string, maxLength = 220) =>
-  value.length <= maxLength ? value : `${value.slice(0, maxLength)}...`;
-
-const applyStaticTranslations = () => {
-  const locale = getLocale();
-  document.documentElement.lang = locale;
-
-  document.querySelectorAll<HTMLElement>("[data-i18n]").forEach((element) => {
-    const key = element.dataset.i18n as TranslationKey | undefined;
-    if (!key) {
-      return;
-    }
-
-    const message = t(locale, key);
-    if (element.tagName === "TITLE") {
-      document.title = message;
-      return;
-    }
-
-    element.textContent = message;
-  });
-
-  document.querySelectorAll<
-    HTMLInputElement | HTMLTextAreaElement
-  >("[data-i18n-placeholder]").forEach((element) => {
-    const key = element.dataset.i18nPlaceholder as TranslationKey | undefined;
-    if (!key) {
-      return;
-    }
-
-    element.placeholder = t(locale, key);
-  });
-};
 
 const showBanner = (
   target: HTMLDivElement,
@@ -177,7 +144,7 @@ const renderTextPreview = (item: ClipboardHistoryItem) => {
     return preview;
   }
 
-  preview.textContent = truncate(item.content);
+  preview.textContent = truncateText(item.content);
   return preview;
 };
 
@@ -516,7 +483,7 @@ const renderSettingsForm = (settings: AppSettings) => {
 
 const applySettingsState = (nextState: SettingsState) => {
   settingsState = nextState;
-  applyStaticTranslations();
+  applyStaticTranslations(getLocale());
   renderSettingsForm(nextState.settings);
   renderHotkeyStatus(nextState.hotkeys);
   renderHistory();
@@ -656,5 +623,5 @@ window.ctrlCvApi.onAppViewChanged((view) => {
 });
 
 showView(currentView);
-applyStaticTranslations();
+applyStaticTranslations(getLocale());
 void Promise.all([refreshHistory(), initializeSettings()]);

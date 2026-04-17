@@ -133,9 +133,7 @@ export class SettingsManager extends EventEmitter {
         : this.settings.directHotkeys
     });
 
-    this.store.save(this.settings);
-    this.emit("updated", this.getSettings());
-    return this.getSettings();
+    return this.persistEmitAndReturn();
   }
 
   resetShortcuts(): AppSettings {
@@ -145,8 +143,13 @@ export class SettingsManager extends EventEmitter {
       chordActivator: DEFAULT_SETTINGS.chordActivator
     });
 
+    return this.persistEmitAndReturn();
+  }
+
+  private persistEmitAndReturn(): AppSettings {
     this.store.save(this.settings);
-    this.emit("updated", this.getSettings());
+    const emittedSettings = this.getSettings();
+    this.emit("updated", emittedSettings);
     return this.getSettings();
   }
 }
